@@ -5,7 +5,22 @@ const helmet =  require('helmet');
 const rateLimit = require('express-rate-limit');
 require('dotenv').config(); //Load .env variables
 
+//Database
 const sequelize = require('./src/config/db'); //DB connection
+
+//Import models
+const Client = require('./src/models/Client');
+const Job = require('./src/models/Job');
+const Employee = require('./src/models/Employee');
+const Service = require('./src/models/Service');
+const JobPhoto = require('./src/models/JobPhoto');
+const Feedback = require('./src/models/Feedback');
+const JobService = require('./src/models/JobService');
+const JobEmployee = require('./src/models/Employee');
+
+//GraphQl
+const { graphHTTP } = require('express-graphql');
+const schema = require('./src/schema'); // updated Graphql
 
 //Create Express app
 const app = express();
@@ -14,7 +29,6 @@ const app = express();
 app.use(helmet()); //Security headers
 app.use(cors()); //Allow cross-origin requests
 app.use(express.json()); // Parse JSON bodies
-
 //Rate limiting (basic, 15 min window)
 app.use(rateLimit({
     windowMs: 15 * 60 * 1000, //15 minutes
@@ -26,10 +40,23 @@ app.get('/', ( req, res,) => {
     res.send('Chavez Tree Service backend is running!');
 });
 
+//GraphQL endpoint
+app.use('/graphql', graphHTTP({
+    schema,
+    graphiql: true, //enable GraphiQL in dev
+}));
+
+
+
 //Test Database Connection
 sequelize.authenticate()
   .then(() => console.log('PostgreSQL connected successfully!'))
   .catch(err => console.log('DB connection error:', err));
+
+//Synce models
+sequelize.sync({ alter: true }) //Updates DB tables
+  .then(() => console.log('All models synced to DB'))
+  .catch(err => console.error('Error syncing models:', err));
 
 //Start Server
 const PORT = process.env.PORT || 5000;
