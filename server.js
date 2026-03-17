@@ -19,14 +19,14 @@ const JobService = require('./src/models/JobService');
 const JobEmployee = require('./src/models/Employee');
 
 //GraphQl
-const { graphHTTP } = require('express-graphql');
+const { graphqlHTTP } = require('express-graphql');
 const schema = require('./src/schema'); // updated Graphql
 
 //Create Express app
 const app = express();
 
 //Middleware
-app.use(helmet()); //Security headers
+app.use(helmet({contentSecurityPolicy: false, })); //Security headers
 app.use(cors()); //Allow cross-origin requests
 app.use(express.json()); // Parse JSON bodies
 //Rate limiting (basic, 15 min window)
@@ -41,7 +41,7 @@ app.get('/', ( req, res,) => {
 });
 
 //GraphQL endpoint
-app.use('/graphql', graphHTTP({
+app.use('/graphql', graphqlHTTP({
     schema,
     graphiql: true, //enable GraphiQL in dev
 }));
