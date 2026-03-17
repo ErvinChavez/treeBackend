@@ -26,7 +26,7 @@ const schema = require('./src/schema'); // updated Graphql
 const app = express();
 
 //Middleware
-app.use(helmet({contentSecurityPolicy: false, })); //Security headers
+app.use(helmet()); //Security headers Turn to false for testing on graphiql
 app.use(cors()); //Allow cross-origin requests
 app.use(express.json()); // Parse JSON bodies
 //Rate limiting (basic, 15 min window)
