@@ -3,7 +3,8 @@ const {
     GraphQLSchema,
     GraphQLString,
     GraphQLList,
-    GraphQLNonNull
+    GraphQLNonNull,
+    GraphQLInt
 } = require('graphql');
 
 const  Client = require('./models/Client');
@@ -33,7 +34,14 @@ const JobType = new GraphQLObjectType({
         city: {type: GraphQLString},
         state: {type: GraphQLString},
         zip: {type: GraphQLString},
-        clientId: {type: GraphQLString},
+        clientId: {type: GraphQLString},    
+        
+        services: {
+        type: new GraphQLList(ServiceType),
+        async resolve(parent, args) {
+            return parent.getServices(); //sequelize relation
+            }
+        }
     }),
 });
 
@@ -87,7 +95,9 @@ const Mutation = new GraphQLObjectType({
                 city: {type: new GraphQLNonNull(GraphQLString) },
                 state: {type: new GraphQLNonNull(GraphQLString) },
                 zip: {type: new GraphQLNonNull(GraphQLString) },
+                serviceIds: { type: new GraphQLList(GraphQLInt) },//array of service IDs
             },
+            
             async resolve(parent, args) {
                 //1. create client
                 const client = await Client.create({
@@ -95,7 +105,7 @@ const Mutation = new GraphQLObjectType({
                     email: args.clientEmail,
                     phone: args.clientPhone,
                 });
-                //2. create job with address
+                //2. create job
                 const job = await Job.create({
                     clientId: client.id,
                     status: 'pending_quote',
@@ -104,6 +114,15 @@ const Mutation = new GraphQLObjectType({
                     state: args.state,
                     zip: args.zip,
                 });
+
+                //3. attach services (many-to-many)
+                if (args.serviceIds && args.serviceIds.length > 0) {
+                    const services = await Service.findAll({
+                        where: { id: args.serviceIds }
+                    });
+
+                    await job.addServices(services); //sequelize magic method
+                }
 
                 return job;
             }
