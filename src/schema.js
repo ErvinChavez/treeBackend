@@ -8,6 +8,7 @@ const {
 
 const  Client = require('./models/Client');
 const Job = require('./models/Job');
+const Service = require('./models/Service')
 
 //Client Type
 const ClientType = new GraphQLObjectType({
@@ -36,6 +37,16 @@ const JobType = new GraphQLObjectType({
     }),
 });
 
+//Service Type
+const ServiceType = new GraphQLObjectType({
+    name: 'Service',
+    fields: () => ({
+        id: { type: GraphQLString},
+        name: { type: GraphQLString},
+        description: { type: GraphQLString},
+    }),
+});
+
 //Root Query
 const RootQuery = new GraphQLObjectType({
     name: 'RootQueryType',
@@ -52,6 +63,12 @@ const RootQuery = new GraphQLObjectType({
                 return Job.findAll();
             },
         },
+        services: {
+            type: new GraphQLList(ServiceType),
+            resolve(parent,args) {
+                return Service.findAll();
+            }
+        }
     },
 });
 
