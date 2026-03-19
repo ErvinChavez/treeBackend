@@ -99,12 +99,22 @@ const Mutation = new GraphQLObjectType({
             },
             
             async resolve(parent, args) {
-                //1. create client
+                //Check if client already exists by email
+                let client = await Client.findOne({ where: {email: args.clientEmail.toLowerCase() } });
+
+                if (!client) {
+                //1. create client if not found
                 const client = await Client.create({
                     name: args.clientName,
-                    email: args.clientEmail,
+                    email: args.clientEmail.toLowerCase(),
                     phone: args.clientPhone,
                 });
+            } else {
+                //client exists so update only if args are provided
+                if (args.clientName) client.name = args.clientName;
+                if (args.clientPhone) client.phone = args.clientPhone;
+                await client.save();
+            }
                 //2. create job
                 const job = await Job.create({
                     clientId: client.id,
