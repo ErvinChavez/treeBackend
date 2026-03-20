@@ -10,7 +10,9 @@ const {
 const  Client = require('./models/Client');
 const Job = require('./models/Job');
 const Service = require('./models/Service')
+const Feedback = require('./models/Feedback');
 const { isValidStatusChange } = require('./services/jobService');
+
 
 //Client Type
 const ClientType = new GraphQLObjectType({
@@ -42,7 +44,14 @@ const JobType = new GraphQLObjectType({
         async resolve(parent, args) {
             return parent.getServices(); //sequelize relation
             }
-        }
+        },
+
+        feedback: {
+            type: FeedbackType,
+            async resolve(parent, args) {
+                return Feedback.findOne({ where: { jobId: parent.id } });
+            }
+        },
     }),
 });
 
@@ -55,6 +64,18 @@ const ServiceType = new GraphQLObjectType({
         description: { type: GraphQLString},
     }),
 });
+
+//Feedback Type
+const FeedbackType = new GraphQLObjectType({
+    name: 'Feedback',
+    fields: () => ({
+        id: { type: GraphQLString },
+        rating: { type: GraphQLInt },
+        comment: { type: GraphQLString },
+        jobId: { type: GraphQLString },
+    }),
+});
+
 
 //Root Query
 const RootQuery = new GraphQLObjectType({
@@ -105,7 +126,7 @@ const Mutation = new GraphQLObjectType({
 
                 if (!client) {
                 //1. create client if not found
-                const client = await Client.create({
+                client = await Client.create({
                     name: args.clientName,
                     email: args.clientEmail.toLowerCase(),
                     phone: args.clientPhone,
@@ -116,28 +137,34 @@ const Mutation = new GraphQLObjectType({
                 if (args.clientPhone) client.phone = args.clientPhone;
                 await client.save();
             }
-                //2. create job
-                const job = await Job.create({
-                    clientId: client.id,
-                    status: 'pending_quote',
-                    street: args.street,
-                    city: args.city,
-                    state: args.state,
-                    zip: args.zip,
+
+            //safety check
+            if(!client) {
+                throw new Error('Client creation failed');
+            }
+
+            //2. create job
+            const job = await Job.create({
+                clientId: client.id,
+                status: 'pending_quote',
+                street: args.street,
+                city: args.city,
+                state: args.state,
+                zip: args.zip,
+            });
+
+            //3. attach services (many-to-many)
+            if (args.serviceIds && args.serviceIds.length > 0) {
+                const services = await Service.findAll({
+                    where: { id: args.serviceIds }
                 });
 
-                //3. attach services (many-to-many)
-                if (args.serviceIds && args.serviceIds.length > 0) {
-                    const services = await Service.findAll({
-                        where: { id: args.serviceIds }
-                    });
-
-                    await job.addServices(services); //sequelize magic method
-                }
-
-                return job;
+                await job.addServices(services); //sequelize magic method
             }
-        },
+
+            return job;
+        }
+    },
 
         updateJobStatus: {
             type: JobType,
@@ -160,6 +187,22 @@ const Mutation = new GraphQLObjectType({
                 //update status
                 job.status = args.newStatus;
                 await job.save();
+
+                //If job completed, create feedback record
+                if (args.newStatus === 'completed') {
+                    const existingFeedback = await Feedback.findOne({
+                        where: { jobId: job.id }            
+                    });
+
+                    //prevent duplicate feedback records
+                    if (!existingFeedback) {
+                        await Feedback.create({
+                            jobId: job.id,
+                            rating: 0, //placeholder until user submits
+                            comment: '',
+                        });
+                    }
+                }
 
                 return job;
             }

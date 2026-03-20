@@ -6,7 +6,7 @@ const Client = require('./Client');
 const Job = sequelize.define('Job', {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     status: {
-        type: DataTypes.ENUM('pending_quote', 'quote_scheduled', 'scheduled', 'in-progress', 'completed', 'paid', 'cancelled' ),
+        type: DataTypes.ENUM('pending_quote', 'quote_scheduled', 'scheduled', 'in_progress', 'completed', 'paid', 'cancelled' ),
         defaultValue: 'pending_quote'
     },
     scheduledDate: { type: DataTypes.DATE, allowNull: true },

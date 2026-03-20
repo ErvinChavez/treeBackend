@@ -40,12 +40,6 @@ app.get('/', ( req, res,) => {
     res.send('Chavez Tree Service backend is running!');
 });
 
-//GraphQL endpoint
-app.use('/graphql', graphqlHTTP({
-    schema,
-    graphiql: true, //enable GraphiQL in dev
-}));
-
 //Start Server + DB Sync + Seed
 const PORT = process.env.PORT || 5000;
 
@@ -90,11 +84,19 @@ sequelize.authenticate()
     } else {
         console.log('Services already exist, skipping seed.');
     }
+
+    //GraphQL endpoint
+    app.use('/graphql', graphqlHTTP({
+        schema,
+        graphiql: true, //enable GraphiQL in dev
+    }));
+
     //Start Server
     app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
     });
   })
+  
   .catch(err => {
     console.error('Error starting server:', err)
   });
