@@ -10,6 +10,7 @@ const {
 const  Client = require('./models/Client');
 const Job = require('./models/Job');
 const Service = require('./models/Service')
+const { isValidStatusChange } = require('./services/jobService');
 
 //Client Type
 const ClientType = new GraphQLObjectType({
@@ -136,7 +137,33 @@ const Mutation = new GraphQLObjectType({
 
                 return job;
             }
-        }
+        },
+
+        updateJobStatus: {
+            type: JobType,
+            args: {
+                jobId: { type: new GraphQLNonNull(GraphQLInt) },
+                newStatus: { type: new GraphQLNonNull(GraphQLString) },
+            },
+            async resolve(parent, args) {
+                const job = await Job.findByPk(args.jobId);
+
+                if (!job) {
+                    throw new Error('Job not found');
+                }
+
+                //validate transition
+                if (!isValidStatusChange(job.status, args.newStatus)) {
+                    throw new Error(`Invalid status transition from ${job.status} to ${args.newStatus}`);
+                }
+
+                //update status
+                job.status = args.newStatus;
+                await job.save();
+
+                return job;
+            }
+        },
     }
 });
 
