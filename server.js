@@ -48,7 +48,7 @@ sequelize.authenticate()
   .then(() => {
     console.log('PostgreSQL connected successfully!');
 
-    return sequelize.sync({ force: true }); //Temporary: good for development Change to alter: true for deployment
+    return sequelize.sync(); //Temporary: good for development Change to alter: true for deployment
 })
   .then(async () => {
     console.log('All models synced to DB');
@@ -96,7 +96,7 @@ sequelize.authenticate()
     console.log(`Server running on port ${PORT}`);
     });
   })
-  
+
   .catch(err => {
     console.error('Error starting server:', err)
   });

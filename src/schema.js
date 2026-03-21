@@ -73,6 +73,7 @@ const FeedbackType = new GraphQLObjectType({
         rating: { type: GraphQLInt },
         comment: { type: GraphQLString },
         jobId: { type: GraphQLString },
+        googleReviewLink: { type: GraphQLString }, 
     }),
 });
 
@@ -205,6 +206,39 @@ const Mutation = new GraphQLObjectType({
                 }
 
                 return job;
+            }
+        },
+
+        submitFeedback: {
+            type: FeedbackType,
+            args: {
+                jobId: { type: new GraphQLNonNull(GraphQLInt) },
+                rating: { type: new GraphQLNonNull(GraphQLInt) }, //1-5
+                comment: { type: GraphQLString },
+            },
+            async resolve(parent, args) {
+                const job = await Job.findByPk(args.jobId);
+
+                if (!job) throw new Error('Job not found');
+
+                const feedback = await Feedback.findOne({ where: { jobId: job.id } });
+                if (!feedback) throw new Error('Feedback record not found');
+
+                //update feedback record
+                feedback.rating = args.rating;
+                feedback.comment = args.comment || '';
+                await feedback.save();
+
+                //business logic routing
+                if (args.rating >= 4) {
+                    //return google review link(frontend can redirect)
+                    feedback.googleReviewLink = 'https://g.page/r/CeBcAA5Lxo0aEBM/review'
+                } else {
+                    //internal: just stored in db
+                    feedback.googleReviewLink = null;
+                }
+
+                return feedback;
             }
         },
     }
