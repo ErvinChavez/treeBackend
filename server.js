@@ -19,21 +19,30 @@ const Feedback = require('./src/models/Feedback');
 const JobService = require('./src/models/JobService');
 const JobEmployee = require('./src/models/JobEmployee');
 
+
 //GraphQl Schema
 const schema = require('./src/schema'); // updated Graphql
 
-//Create Express App Init
+//Routes
+const uploadRoutes = require('./src/routes/uploadRoutes');
+
+//Create Express App 
 const app = express();
 
 //Middleware
 app.use(helmet({contentSecurityPolicy: false,})); //Security headers Turn to false for testing on graphiql
 app.use(cors()); //Allow cross-origin requests
 app.use(express.json()); // Parse JSON bodies
-//Rate limiting (basic, 15 min window)
-app.use(rateLimit({
+app.use(rateLimit({//Rate limiting (basic, 15 min window)
     windowMs: 15 * 60 * 1000, //15 minutes
     max: 100 //limit each IP to 100 requests per window
 }));
+
+//Mount uploads route
+app.use('/api/upload', uploadRoutes);
+
+//serve static files from uploads folder
+app.use('/uploads', express.static('src/uploads'));
 
 //Test route
 app.get('/', ( req, res,) => {
@@ -44,10 +53,10 @@ app.get('/', ( req, res,) => {
 const PORT = process.env.PORT || 5000;
 
 //Test Database Connection
-sequelize.authenticate()
+sequelize
+  .authenticate()
   .then(() => {
     console.log('PostgreSQL connected successfully!');
-
     return sequelize.sync(); //Temporary: good for development Change to alter: true for deployment
 })
   .then(async () => {

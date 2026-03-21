@@ -11,7 +11,10 @@ const  Client = require('./models/Client');
 const Job = require('./models/Job');
 const Service = require('./models/Service')
 const Feedback = require('./models/Feedback');
+const JobPhoto = require('./models/JobPhoto');
 const { isValidStatusChange } = require('./services/jobService');
+
+const { where } = require('sequelize');
 
 
 //Client Type
@@ -50,6 +53,17 @@ const JobType = new GraphQLObjectType({
             type: FeedbackType,
             async resolve(parent, args) {
                 return Feedback.findOne({ where: { jobId: parent.id } });
+            }
+        },
+
+        photos: {
+            type: new GraphQLList(GraphQLString),
+            async resolve(parent) {
+                const photos = await JobPhoto.findAll({
+                    where: { jobId: parent.id }
+                });
+
+                return photos.map(p => p.url);
             }
         },
     }),
