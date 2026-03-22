@@ -1,6 +1,7 @@
 //basic server setup
 const express = require('express');
 const { graphqlHTTP } = require('express-graphql');
+const jwt = require('jsonwebtoken');
 const cors = require('cors');
 const helmet =  require('helmet');
 const rateLimit = require('express-rate-limit');
@@ -30,7 +31,7 @@ const uploadRoutes = require('./src/routes/uploadRoutes');
 const app = express();
 
 //Middleware
-app.use(helmet({contentSecurityPolicy: false,})); //Security headers Turn to false for testing on graphiql
+app.use(helmet({contentSecurityPolicy: false})); //Security headers Turn to false for testing on graphiql
 app.use(cors()); //Allow cross-origin requests
 app.use(express.json()); // Parse JSON bodies
 app.use(rateLimit({//Rate limiting (basic, 15 min window)
@@ -95,9 +96,22 @@ sequelize
     }
 
     //GraphQL endpoint
-    app.use('/graphql', graphqlHTTP({
-        schema,
-        graphiql: true, //enable GraphiQL in dev
+    app.use('/graphql', graphqlHTTP((req) => {
+        let admin = null;
+        const authHeader = req.headers.authorization;
+        if (authHeader) {
+            const token = authHeader.split(' ')[1];
+            try {
+                admin = jwt.verify(token, process.env.JWT_SECRET);
+            } catch (err) {
+                admin = null;
+            }
+        }
+        return {
+            schema,
+            context: { admin }, //available in all resolvers
+            graphiql: true,
+        };
     }));
 
     //Start Server

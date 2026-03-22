@@ -12,6 +12,10 @@ const Job = require('./models/Job');
 const Service = require('./models/Service')
 const Feedback = require('./models/Feedback');
 const JobPhoto = require('./models/JobPhoto');
+const Employee = require('./models/Employee');
+const bcrypt = require('bcryptjs');
+const Admin = require('./models/Admin');
+const { generateToken } = require('./services/authService');
 const { isValidStatusChange } = require('./services/jobService');
 
 const { where } = require('sequelize');
@@ -91,6 +95,17 @@ const FeedbackType = new GraphQLObjectType({
     }),
 });
 
+//Employee Type
+const EmployeeType = new GraphQLObjectType({
+    name: 'Employee',
+    fields: () => ({
+        id: { type: GraphQLString },
+        name: { type: GraphQLString },
+        email: { type: GraphQLString},
+        phone: { type: GraphQLString},
+    }),
+});
+
 
 //Root Query
 const RootQuery = new GraphQLObjectType({
@@ -121,6 +136,45 @@ const RootQuery = new GraphQLObjectType({
 const Mutation = new GraphQLObjectType({
     name: 'Mutation',
     fields: {
+        registerAdmin: {
+            type: GraphQLString,
+            args: {
+                email: { type: new GraphQLNonNull(GraphQLString) },
+                password: { type: new GraphQLNonNull(GraphQLString) },
+            },
+            async resolve(parent, args) {
+                const existing = await Admin.findOne({ where: { email: args.email } });
+                if (existing) throw new Error('Admin already exists');
+                
+                const hashedPassword = await bcrypt.hash(args.password, 10);
+
+                const admin = await Admin.create({
+                    email: args.email,
+                    password: hashedPassword,
+                });
+
+                return 'Admin registered successfully';
+            }
+        },
+
+        loginAdmin: {
+            type: GraphQLString,
+            args: {
+                email: {type: new GraphQLNonNull(GraphQLString) },
+                password: { type: new GraphQLNonNull(GraphQLString) },
+            },
+            async resolve(parent, args) {
+                const admin = await Admin.findOne({ where: {email: args.email } });
+                if (!admin) throw new Error('Invalid credentials');
+
+                const isMatch = await bcrypt.compare(args.password, admin.password);
+                if (!isMatch) throw new Error('Invalid credentials');
+
+                const token = generateToken(admin);
+
+                return token; //return JWT
+            }
+        },
         createQuoteRequest: {
             type: JobType,
             args: {
@@ -187,7 +241,10 @@ const Mutation = new GraphQLObjectType({
                 jobId: { type: new GraphQLNonNull(GraphQLInt) },
                 newStatus: { type: new GraphQLNonNull(GraphQLString) },
             },
-            async resolve(parent, args) {
+            async resolve(parent, args, context) {
+                if (!context.admin) {
+                    throw new Error('Unauthorized');
+                }
                 const job = await Job.findByPk(args.jobId);
 
                 if (!job) {
