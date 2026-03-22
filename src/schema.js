@@ -4,7 +4,8 @@ const {
     GraphQLString,
     GraphQLList,
     GraphQLNonNull,
-    GraphQLInt
+    GraphQLInt,
+    GraphQLFloat
 } = require('graphql');
 
 const  Client = require('./models/Client');
@@ -70,6 +71,13 @@ const JobType = new GraphQLObjectType({
                 return photos.map(p => p.url);
             }
         },
+
+        employees: {
+            type: new GraphQLList(EmployeeType),
+            async resolve(parent, args) {
+                return parent.getEmployees();
+            }
+        },
     }),
 });
 
@@ -127,6 +135,67 @@ const RootQuery = new GraphQLObjectType({
             type: new GraphQLList(ServiceType),
             resolve(parent,args) {
                 return Service.findAll();
+            }
+        },
+        employees: {
+            type: new GraphQLList(EmployeeType),
+            async resolve(parent, args, context) {
+                if (!context.admin) throw new Error('Unauthorized');
+                return Employee.findAll();
+            }
+        },
+
+        totalJobs: {
+            type: GraphQLInt,
+            async resolve(parent, args, context) {
+                if (!context.admin) throw new Error('Unauthorized');
+                return Job.count();
+            }
+        },
+
+        jobsByStatus: {
+            type: new GraphQLList(
+                new GraphQLObjectType({
+                    name: 'JobsByStatus',
+                    fields: {
+                        status: { type: GraphQLString },
+                        count: { type: GraphQLInt },
+                    }
+                })
+            ),
+            async resolve(parent, args, context) {
+                if (!context.admin) throw new Error('Unauthorized');
+
+                const statuses = ['pending_quote', 'quote_scheduled', 'scheduled', 'in_progress', 'completed', 'paid', 'cancelled'];
+                const result = [];
+
+                for (const status of statuses) {
+                    const count = await Job.count({ where: { status } });
+                    result.push({ status, count });
+                }
+                
+                return result;
+            }
+        },
+
+        totalClients: {
+            type: GraphQLInt,
+            async resolve(parent, args, context) {
+                if (!context.admin) throw new Error('Unauthorized');
+                return Client.count();
+            }
+        },
+
+        averageRating: {
+            type: GraphQLFloat,
+            async resolve(parent, args, context) {
+                if (!context.admin) throw new Error('Unauthorized');
+
+                const feedbacks = await Feedback.findAll();
+                if (feedbacks.length === 0) return 0;
+
+                const total = feedbacks.reduce((sum, f) => sum + f.rating, 0);
+                return total / feedbacks.length;
             }
         }
     },
@@ -312,6 +381,46 @@ const Mutation = new GraphQLObjectType({
                 return feedback;
             }
         },
+
+        createEmployee: {
+            type: EmployeeType,
+            args: {
+                name: { type: new GraphQLNonNull(GraphQLString) },
+                email: { type: GraphQLString },
+                phone: { type: GraphQLString },
+            },
+            async resolve(parent, args, context) {
+                if (!context.admin) throw new Error('Unauthorized');
+
+                return Employee.create({
+                    name: args.name,
+                    email: args.email,
+                    phone: args.phone,
+                });
+            }
+        },
+
+        assignEmployeesToJob: {
+            type: JobType,
+            args: {
+                jobId: { type: new GraphQLNonNull(GraphQLInt) },
+                employeeIds: { type: new GraphQLList(GraphQLInt) },
+            },
+            async resolve(parent, args, context) {
+                if (!context.admin) throw new Error('Unauthorized');
+
+                const job = await Job.findByPk(args.jobId);
+                if (!job) throw new Error('Job not found');
+
+                const employees = await Employee.findAll({
+                    where: { id: args.employeeIds }
+                });
+
+                await job.setEmployees(employees); //replaces existing assignments
+
+                return job;
+            }
+        }
     }
 });
 
