@@ -8,24 +8,24 @@ const rateLimit = require('express-rate-limit');
 require('dotenv').config(); //Load .env variables
 
 //Database
-const sequelize = require('./config/db'); //DB connection
+const sequelize = require('./src/config/db'); //DB connection
 
 //Import models
-const Client = require('./models/Client');
-const Job = require('./models/Job');
-const Employee = require('./models/Employee');
-const Service = require('./models/Service');
-const JobPhoto = require('./models/JobPhoto');
-const Feedback = require('./models/Feedback');
-const JobService = require('./models/JobService');
-const JobEmployee = require('./models/JobEmployee');
+const Client = require('./src/models/Client');
+const Job = require('./src/models/Job');
+const Employee = require('./src/models/Employee');
+const Service = require('./src/models/Service');
+const JobPhoto = require('./src/models/JobPhoto');
+const Feedback = require('./src/models/Feedback');
+const JobService = require('./src/models/JobService');
+const JobEmployee = require('./src/models/JobEmployee');
 
 
 //GraphQl Schema
-const schema = require('./schema'); // updated Graphql
+const schema = require('./src/schema'); // updated Graphql
 
 //Routes
-const uploadRoutes = require('./routes/uploadRoutes');
+const uploadRoutes = require('./src/routes/uploadRoutes');
 
 //Create Express App 
 const app = express();
