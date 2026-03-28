@@ -40,6 +40,7 @@ const JobType = new GraphQLObjectType({
     fields: () => ({
         id: {type: GraphQLString},
         status: {type: GraphQLString},
+        createdAt: { type: GraphQLString},
         scheduledDate: {type: GraphQLString},
         street: {type: GraphQLString},
         city: {type: GraphQLString},
