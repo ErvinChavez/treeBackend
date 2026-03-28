@@ -78,6 +78,13 @@ const JobType = new GraphQLObjectType({
                 return parent.getEmployees();
             }
         },
+
+        client: {
+            type: ClientType,
+            async resolve(parent) {
+                return Client.findByPk(parent.clientId);
+            }                
+        }
     }),
 });
 
