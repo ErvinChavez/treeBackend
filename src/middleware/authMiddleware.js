@@ -1,21 +1,45 @@
+// middleware/authMiddleware.js
 const jwt = require('jsonwebtoken');
+const Admin = require('../models/Admin');
 
-const protect = (req, res, next) => {
-    const authHeader = req.headers.authorization;
+// Protect routes (REST)
+const protect = async (req, res, next) => {
+  let token;
 
-    if (!authHeader) {
-        return res.status(401).json({ error: 'No token provided' });
-    }
-
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
     try {
-        const token = authHeader.split(' ')[1]; //Bearer TOKEN
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      token = req.headers.authorization.split(' ')[1];
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-        req.admin = decoded; //attach admin info to request
-        next();
-    } catch (err) {
-        return res.status(401).json({ error: 'Invalid token' });
+      // Attach admin user to request
+      const admin = await Admin.findByPk(decoded.id, { attributes: { exclude: ['password'] } });
+
+      if (!admin) {
+        return res.status(401).json({ message: 'Not authorized, admin not found' });
+      }
+
+      req.admin = admin;
+      next();
+    } catch (error) {
+      console.error(error);
+      return res.status(401).json({ message: 'Not authorized, token failed' });
     }
+  } else {
+    return res.status(401).json({ message: 'Not authorized, no token' });
+  }
 };
 
-module.exports = { protect };
+// Optional helper for GraphQL context
+const getAdminFromToken = async (token) => {
+  if (!token) return null;
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const admin = await Admin.findByPk(decoded.id, { attributes: { exclude: ['password'] } });
+    return admin || null;
+  } catch {
+    return null;
+  }
+};
+
+module.exports = { protect, getAdminFromToken };
