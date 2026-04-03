@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const path = require('path');
 require('dotenv').config();
 
 // Database
@@ -39,20 +40,22 @@ app.use(
 
         scriptSrc: [
           "'self'",
-          "'unsafe-inline'", // ✅ allow Next.js & GraphQL UI
-          "'unsafe-eval'"    // ✅ needed for dev tools / GraphiQL
+          "'unsafe-inline'", // allow Next.js & GraphQL UI
+          "'unsafe-eval'",    // needed for dev tools / GraphiQL
         ],
 
         styleSrc: [
           "'self'",
           "'unsafe-inline'",
-          "https:"
+          "https:",
         ],
 
         imgSrc: [
           "'self'",
           "data:",
-          "https:"
+          "https:",
+          "http://localhost:5000", // allow images from backend
+          "http://localhost:3000", // allow images from frontend
         ],
 
         connectSrc: [
@@ -65,6 +68,7 @@ app.use(
     crossOriginEmbedderPolicy: false,
   })
 );
+
 app.use(cors());
 app.use(express.json({ limit: '5mb' })); // limit JSON payloads
 app.use(
@@ -74,11 +78,18 @@ app.use(
   })
 );
 
+// Serve static files from uploads
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'),{
+  setHeaders: (res, path, stat) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');      // allow any origin
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin'); // allow cross-origin access
+  }
+  }));
+
 // Upload route (protected)
 app.use('/api/upload', protect, uploadRoutes);
 
-// Serve static files from uploads
-app.use('/uploads', express.static('./uploads'));
+
 
 // Test route
 app.get('/', (req, res) => {

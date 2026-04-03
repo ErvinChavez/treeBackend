@@ -35,7 +35,7 @@ exports.uploadPhoto = async (req, res) => {
       //save to db
       const photo = await JobPhoto.create({
         jobId,
-        url: `/uploads/${uniqueName}`,
+        url: uniqueName,
         type: type || 'before'
       });
       res.json(photo);
