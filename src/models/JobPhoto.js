@@ -5,7 +5,7 @@ const Job = require('./Job');
 const JobPhoto = sequelize.define('JobPhoto', {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     url: { type: DataTypes.STRING, allowNull: false },
-    type: { type: DataTypes.ENUM('before', 'after'), allowNull: false },
+    type: { type: DataTypes.STRING, allowNull: false },
 }, { timestamps: true });
 
 //Relation: JobPhoto belongs to Job
