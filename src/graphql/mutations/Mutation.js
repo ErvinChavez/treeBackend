@@ -199,8 +199,16 @@ const Mutation = new GraphQLObjectType({
               comment: "",
             });
           }
-        }
 
+          //Send review request
+          const client = await Client.findByPk(job.clientId);
+
+          console.log(`
+            Send review request to:
+            ${client.email} / ${client.phone}
+            Link: https://g.page/r/CeBcAA5Lxo0aEBM/review
+            `);
+        }
         return job;
       },
     },
