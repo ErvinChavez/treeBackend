@@ -14,6 +14,7 @@ const Job = sequelize.define('Job', {
     city: { type: DataTypes.STRING, allowNull: false },
     state: { type: DataTypes.STRING, allowNull: false },
     zip: { type: DataTypes.STRING, allowNull: false },
+    reviewRequested: { type: DataTypes.BOOLEAN, defaultValue: false, },
 }, { timestamps: true });
 
 //Relation: Job belongs to Client

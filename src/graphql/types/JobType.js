@@ -1,7 +1,8 @@
 const {
   GraphQLObjectType,
   GraphQLString,
-  GraphQLList
+  GraphQLList,
+  GraphQLBoolean
 } = require("graphql");
 
 const ServiceType = require("./ServiceType");
@@ -25,6 +26,7 @@ const JobType = new GraphQLObjectType({
     state: { type: GraphQLString },
     zip: { type: GraphQLString },
     clientId: { type: GraphQLString },
+    reviewRequested: { type: GraphQLBoolean },
 
     services: {
       type: new GraphQLList(ServiceType),

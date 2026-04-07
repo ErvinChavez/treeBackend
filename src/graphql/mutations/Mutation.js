@@ -213,6 +213,39 @@ const Mutation = new GraphQLObjectType({
       },
     },
 
+    sendReviewRequest: {
+      type: GraphQLString,
+      args: {
+        jobId: { type: new GraphQLNonNull(GraphQLInt) },
+      },
+      async resolve(parent, args, context) {
+        if (!context.admin) throw new Error("Unauthorized");
+
+        const job = await Job.findByPk(args.jobId);
+        if (!job) throw new Error("Job not found");
+
+        // Prevent duplicate requests
+        if (job.reviewRequested) {
+          return "Review request already sent";
+        }
+
+        const client = await Client.findByPk(job.clientId);
+
+        //THIS is where you'd send SMS/email later
+        console.log(`
+          Sending review request to:
+          ${client.email} / ${client.phone}
+          Link: https://g.page/r/CeBcAA5Lxo0aEBM/review
+        `);
+
+        // Mark as sent
+        job.reviewRequested = true;
+        await job.save();
+
+        return "Review request sent successfully";
+      },
+    },
+
     submitFeedback: {
       type: FeedbackType,
       args: {
