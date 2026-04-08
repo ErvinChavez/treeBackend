@@ -3,7 +3,8 @@ const {
   GraphQLString,
   GraphQLNonNull,
   GraphQLInt,
-  GraphQLList
+  GraphQLList,
+  GraphQLBoolean
 } = require("graphql");
 
 const bcrypt = require("bcryptjs");
@@ -214,7 +215,7 @@ const Mutation = new GraphQLObjectType({
     },
 
     sendReviewRequest: {
-      type: GraphQLString,
+      type: GraphQLBoolean,
       args: {
         jobId: { type: new GraphQLNonNull(GraphQLInt) },
       },
@@ -226,7 +227,7 @@ const Mutation = new GraphQLObjectType({
 
         // Prevent duplicate requests
         if (job.reviewRequested) {
-          return "Review request already sent";
+          return false;
         }
 
         const client = await Client.findByPk(job.clientId);
@@ -242,7 +243,7 @@ const Mutation = new GraphQLObjectType({
         job.reviewRequested = true;
         await job.save();
 
-        return "Review request sent successfully";
+        return true;
       },
     },
 
