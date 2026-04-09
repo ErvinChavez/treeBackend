@@ -190,27 +190,35 @@ const Mutation = new GraphQLObjectType({
         await job.save();
 
         if (args.newStatus === "completed") {
-          const existing = await Feedback.findOne({
-            where: { jobId: job.id },
-          });
-
+          // Create feedback record if none exists
+          const existing = await Feedback.findOne({ where: { jobId: job.id } });
           if (!existing) {
-            await Feedback.create({
-              jobId: job.id,
-              rating: 0,
-              comment: "",
-            });
+            await Feedback.create({ jobId: job.id, rating: 0, comment: "" });
           }
 
+          // Fetch client info
           const client = await Client.findByPk(job.clientId);
           if (client && client.email) {
-            const message = `Hello ${client.name}, your job #${job.id} is now completed. Thank you for using Chavez Tree Service!`;
+            // Base URL for review link (your frontend route)
+            const frontendBase = "https://chaveztree.com/review"; 
 
-            // sendEmail is imported from utils/email.js
-            await sendEmail(client.email, "Job Completed", message);
+            // HTML email with clickable stars
+            const emailHtml = `
+              <p>Hi ${client.name}, thanks for using Chavez Tree Service! How would you rate your experience?</p>
+              <p>
+                <a href="${frontendBase}?jobId=${job.id}&rating=5" style="text-decoration:none;font-size:24px;">⭐️⭐️⭐️⭐️⭐️</a>
+                <a href="${frontendBase}?jobId=${job.id}&rating=4" style="text-decoration:none;font-size:24px;">⭐️⭐️⭐️⭐️</a>
+                <a href="${frontendBase}?jobId=${job.id}&rating=3" style="text-decoration:none;font-size:24px;">⭐️⭐️⭐️</a>
+                <a href="${frontendBase}?jobId=${job.id}&rating=2" style="text-decoration:none;font-size:24px;">⭐️⭐️</a>
+                <a href="${frontendBase}?jobId=${job.id}&rating=1" style="text-decoration:none;font-size:24px;">⭐️</a>
+              </p>
+              <p>If you have any additional feedback, you can also reply to this email.</p>
+            `;
 
+            await sendEmail(client.email, "How did we do? Rate Chavez Tree Service", emailHtml);
           }
         }
+
         return job;
       },
     },
