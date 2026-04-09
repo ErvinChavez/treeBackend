@@ -16,6 +16,7 @@ const Service = require("../../models/Service");
 const Feedback = require("../../models/Feedback");
 const Employee = require("../../models/Employee");
 
+const { sendEmail } = require("../../utils/email");
 const { generateToken } = require("../../services/authService");
 const { isValidStatusChange } = require("../../services/jobService");
 
@@ -201,14 +202,14 @@ const Mutation = new GraphQLObjectType({
             });
           }
 
-          //Send review request
           const client = await Client.findByPk(job.clientId);
+          if (client && client.email) {
+            const message = `Hello ${client.name}, your job #${job.id} is now completed. Thank you for using Chavez Tree Service!`;
 
-          console.log(`
-            Send review request to:
-            ${client.email} / ${client.phone}
-            Link: https://g.page/r/CeBcAA5Lxo0aEBM/review
-            `);
+            // sendEmail is imported from utils/email.js
+            await sendEmail(client.email, "Job Completed", message);
+
+          }
         }
         return job;
       },
