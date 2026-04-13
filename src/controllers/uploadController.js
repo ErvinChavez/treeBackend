@@ -2,6 +2,7 @@ const sharp = require('sharp');
 const path = require('path');
 const JobPhoto = require('../models/JobPhoto');
 const Job = require('../models/Job');
+const { url } = require('inspector');
 
 exports.uploadPhoto = async (req, res) => {
     try {
@@ -38,7 +39,7 @@ exports.uploadPhoto = async (req, res) => {
         url: uniqueName,
         type: type || 'before'
       });
-      res.json(photo);
+      res.json({ url: uniqueName });
     } catch (err) {
         console.error(error);
         res.status(500).json({ error: ' Something went wrong with the upload.' });
