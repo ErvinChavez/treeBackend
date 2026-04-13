@@ -16,7 +16,7 @@ const Service = require("../../models/Service");
 const Feedback = require("../../models/Feedback");
 const Employee = require("../../models/Employee");
 
-const { sendEmail } = require("../../utils/email");
+const sendEmail = require("../../utils/email");
 const { generateToken } = require("../../services/authService");
 const { isValidStatusChange } = require("../../services/jobService");
 

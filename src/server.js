@@ -1,4 +1,3 @@
-// server.js
 const express = require('express');
 const { graphqlHTTP } = require('express-graphql');
 const jwt = require('jsonwebtoken');
@@ -27,7 +26,7 @@ const schema = require('./schema');
 // Routes
 const reviewRoutes = require('./routes/review');
 const uploadRoutes = require('./routes/uploadRoutes');
-const { protect } = require('./middleware/authMiddleware'); // JWT auth for uploads
+const { getAdminFromToken, protect } = require('./middleware/authMiddleware'); // JWT auth for uploads
 
 // Create Express App
 const app = express();
@@ -89,7 +88,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads'),{
   }));
 
 // Upload route (protected)
-app.use('/api/upload', protect, uploadRoutes);
+app.use('/api/upload', uploadRoutes);
 app.use("/review", reviewRoutes);
 
 
@@ -107,7 +106,7 @@ app.use(
     if (authHeader) {
       const token = authHeader.split(' ')[1];
       try {
-        admin = jwt.verify(token, process.env.JWT_SECRET);
+        admin = await getAdminFromToken(token);
       } catch (err) {
         admin = null;
       }
@@ -133,7 +132,7 @@ sequelize
   .authenticate()
   .then(() => {
     console.log('PostgreSQL connected successfully!');
-    return sequelize.sync(); // Production-ready
+    return sequelize.sync(); // Change to sequelize.sync({ alter: true }) // for dev only
   })
   .then(() => {
     console.log('All models synced to DB');

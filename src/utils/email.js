@@ -15,13 +15,13 @@ const transporter = nodemailer.createTransport({
   debug: true,
 });
 
-async function sendEmail(to, subject, text) {
+async function sendEmail(to, subject, html) {
   try {
     await transporter.sendMail({
       from: EMAIL_USER,
       to,
       subject,
-      text,
+      html,
     });
     console.log("Email sent to", to);
   } catch (err) {

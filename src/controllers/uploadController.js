@@ -41,7 +41,7 @@ exports.uploadPhoto = async (req, res) => {
       });
       res.json({ url: uniqueName });
     } catch (err) {
-        console.error(error);
+        console.error(err);
         res.status(500).json({ error: ' Something went wrong with the upload.' });
     }
 };
