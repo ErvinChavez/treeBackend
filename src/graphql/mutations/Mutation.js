@@ -189,36 +189,6 @@ const Mutation = new GraphQLObjectType({
         job.status = args.newStatus;
         await job.save();
 
-        if (args.newStatus === "completed") {
-          // Create feedback record if none exists
-          const existing = await Feedback.findOne({ where: { jobId: job.id } });
-          if (!existing) {
-            await Feedback.create({ jobId: job.id, rating: 0, comment: "" });
-          }
-
-          // Fetch client info
-          const client = await Client.findByPk(job.clientId);
-          if (client && client.email) {
-            // Base URL for review link (your frontend route)
-            const frontendBase = "https://chaveztree.com/review"; 
-
-            // HTML email with clickable stars
-            const emailHtml = `
-              <p>Hi ${client.name}, thanks for using Chavez Tree Service! How would you rate your experience?</p>
-              <p>
-                <a href="${frontendBase}?jobId=${job.id}&rating=5" style="text-decoration:none;font-size:24px;">⭐️⭐️⭐️⭐️⭐️</a>
-                <a href="${frontendBase}?jobId=${job.id}&rating=4" style="text-decoration:none;font-size:24px;">⭐️⭐️⭐️⭐️</a>
-                <a href="${frontendBase}?jobId=${job.id}&rating=3" style="text-decoration:none;font-size:24px;">⭐️⭐️⭐️</a>
-                <a href="${frontendBase}?jobId=${job.id}&rating=2" style="text-decoration:none;font-size:24px;">⭐️⭐️</a>
-                <a href="${frontendBase}?jobId=${job.id}&rating=1" style="text-decoration:none;font-size:24px;">⭐️</a>
-              </p>
-              <p>If you have any additional feedback, you can also reply to this email.</p>
-            `;
-
-            await sendEmail(client.email, "How did we do? Rate Chavez Tree Service", emailHtml);
-          }
-        }
-
         return job;
       },
     },
@@ -229,30 +199,61 @@ const Mutation = new GraphQLObjectType({
         jobId: { type: new GraphQLNonNull(GraphQLInt) },
       },
       async resolve(parent, args, context) {
-        if (!context.admin) throw new Error("Unauthorized");
+    if (!context.admin) throw new Error("Unauthorized");
 
-        const job = await Job.findByPk(args.jobId);
-        if (!job) throw new Error("Job not found");
+    const job = await Job.findByPk(args.jobId);
+    if (!job) throw new Error("Job not found");
 
-        // Prevent duplicate requests
-        if (job.reviewRequested) {
-          return false;
-        }
+    // Prevent duplicate requests
+    if (job.reviewRequested) {
+      return false;
+    }
 
-        const client = await Client.findByPk(job.clientId);
+    const client = await Client.findByPk(job.clientId);
+    if (!client || !client.email) {
+      throw new Error("Client email not found");
+    }
 
-        //THIS is where you'd send SMS/email later
-        console.log(`
-          Sending review request to:
-          ${client.email} / ${client.phone}
-          Link: https://g.page/r/CeBcAA5Lxo0aEBM/review
-        `);
+    if (!client.email.includes("@")) {
+    throw new Error("Invalid email");
+}
 
-        // Mark as sent
-        job.reviewRequested = true;
-        await job.save();
+    const frontendBase = process.env.FRONTEND_URL
+  ? `${process.env.FRONTEND_URL}/review`
+  : "http://localhost:3000/review";
 
-        return true;
+    const emailHtml = `
+      <p>Hi ${client.name}, thanks for using Chavez Tree Service!</p>
+      <p>How would you rate your experience?</p>
+
+      <p>
+        <a href="${frontendBase}?jobId=${job.id}&rating=5">⭐️⭐️⭐️⭐️⭐️</a><br/>
+        <a href="${frontendBase}?jobId=${job.id}&rating=4">⭐️⭐️⭐️⭐️</a><br/>
+        <a href="${frontendBase}?jobId=${job.id}&rating=3">⭐️⭐️⭐️</a><br/>
+        <a href="${frontendBase}?jobId=${job.id}&rating=2">⭐️⭐️</a><br/>
+        <a href="${frontendBase}?jobId=${job.id}&rating=1">⭐️</a>
+      </p>
+
+      <p>We appreciate your feedback!</p>
+    `;
+
+    console.log("📧 Sending review email to:", client.email);
+
+    try {
+      await sendEmail(
+        client.email,
+        "How did we do? Rate Chavez Tree Service",
+          emailHtml
+      );
+    } catch (err) {
+      console.error("Email failed but continuing:", err.message);
+    }
+
+    // Mark as sent
+    job.reviewRequested = true;
+    await job.save();
+
+    return true;
       },
     },
 
