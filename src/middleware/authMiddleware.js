@@ -31,13 +31,22 @@ const protect = async (req, res, next) => {
 
 // Optional helper for GraphQL context
 const getAdminFromToken = async (token) => {
-  if (!token) return null;
+  if (!token) {
+    console.log("NO TOKEN RECEIVED");
+    return null;
+  }
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const admin = await Admin.findByPk(decoded.id, { attributes: { exclude: ['password'] } });
+    console.log("DECODED TOKEN:", decoded);
+
+    const admin = await Admin.findByPk(decoded.id);
+
+    console.log("ADMIN FROM DB:", admin?.id);
+
     return admin || null;
-  } catch {
+  } catch (err) {
+    console.log("JWT VERIFY FAILED:", err.message);
     return null;
   }
 };
