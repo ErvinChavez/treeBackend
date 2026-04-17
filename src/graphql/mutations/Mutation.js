@@ -199,28 +199,39 @@ const Mutation = new GraphQLObjectType({
         jobId: { type: new GraphQLNonNull(GraphQLInt) },
       },
       async resolve(parent, args, context) {
-    if (!context.admin) throw new Error("Unauthorized");
+        console.log("🔥 sendReviewRequest resolver HIT");
+        console.log("➡️ jobId:", args.jobId);
+        if (!context.admin) throw new Error("Unauthorized");
 
-    const job = await Job.findByPk(args.jobId);
-    if (!job) throw new Error("Job not found");
+        const job = await Job.findByPk(args.jobId);
+        console.log("📦 Job found:", job?.id, "reviewRequested:", job?.reviewRequested);
+        
+        if (!job) throw new Error("Job not found");
 
-    // Prevent duplicate requests
-    if (job.reviewRequested) {
-      return false;
-    }
+      // Prevent duplicate requests
+      if (job.reviewRequested) {
+        console.log("⚠️ Review already requested, skipping");
+        return false;
+      }
 
-    const client = await Client.findByPk(job.clientId);
-    if (!client || !client.email) {
-      throw new Error("Client email not found");
-    }
+      const client = await Client.findByPk(job.clientId);
+      console.log("👤 Client:", client?.email);
 
-    if (!client.email.includes("@")) {
-    throw new Error("Invalid email");
-}
+      if (!client || !client.email) {
+        throw new Error("Client email not found");
+      }
+
+      if (!client.email.includes("@")) {
+        throw new Error("Invalid email");
+      }
 
     const frontendBase = process.env.FRONTEND_URL
-  ? `${process.env.FRONTEND_URL}/review`
-  : "http://localhost:3000/review";
+      ? `${process.env.FRONTEND_URL}/review`
+      : "http://localhost:3000/review";
+
+    console.log("🌐 Review link base:", frontendBase);
+
+    console.log("📧 Sending review email to:", client.email);
 
     const emailHtml = `
       <p>Hi ${client.name}, thanks for using Chavez Tree Service!</p>
@@ -252,6 +263,8 @@ const Mutation = new GraphQLObjectType({
     // Mark as sent
     job.reviewRequested = true;
     await job.save();
+
+    console.log("✅ reviewRequested saved");
 
     return true;
       },
