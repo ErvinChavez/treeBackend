@@ -281,24 +281,64 @@ const Mutation = new GraphQLObjectType({
         const job = await Job.findByPk(args.jobId);
         if (!job) throw new Error("Job not found");
 
-        const feedback = await Feedback.findOne({
+        if (job.status !== "completed") {
+          throw new Error("Feedback not allowed for this job");
+        }
+
+        if (!job.reviewRequested) {
+          throw new Error("Review not requested for this job");
+        }
+
+        if (args.rating < 1 || args.rating > 5) {
+          throw new Error("Invalid rating");
+        }
+
+        const existing = await Feedback.findOne({
           where: { jobId: job.id },
         });
 
-        if (!feedback) throw new Error("Feedback record not found");
-
-        feedback.rating = args.rating;
-        feedback.comment = args.comment || "";
-
-        if (args.rating >= 4) {
-          feedback.googleReviewLink =
-            "https://g.page/r/CeBcAA5Lxo0aEBM/review";
-        } else {
-          feedback.googleReviewLink = null;
+        if (existing) {
+          throw new Error("Feedback already submitted");
         }
 
-        await feedback.save();
+        try {
+          const feedback = await Feedback.create({
+            jobId: job.id,
+            rating: args.rating,
+            comment: args.comment || "",
+            googleReviewLink: args.rating >= 4
+              ? "https://g.page/r/CeBcAA5Lxo0aEBM/review"
+              : null,
+          });
+
+          if (args.rating < 4) {
+            try {
+              await sendEmail(
+                process.env.EMAIL_USER,
+                `Low Rating Feedback - Job #${job.id}`,
+                `
+                  <h2>New Low Rating Feedback</h2>
+                  <p><strong>Job ID:</strong> ${job.id}</p>
+                  <p><strong>Rating:</strong> ${args.rating}</p>
+                  <p><strong>Comment:</strong></p>
+                  <p>${args.comment || "No comment provided"}</p>
+                ` 
+              );
+            } catch (emailErr) {
+              console.error("Email failed:", emailErr);
+            } 
+          }
+          
         return feedback;
+
+        } catch (err) {
+          if (err.name === "SequelizeUniqueConstraintError") {
+            throw new Error("Feedback already submitted")
+          }
+
+          console.log("Submit feedback error:", err );
+          throw new Error("Something went wrong submitting feedback");
+        }
       },
     },
 
