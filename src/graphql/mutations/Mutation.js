@@ -306,9 +306,6 @@ const Mutation = new GraphQLObjectType({
             jobId: job.id,
             rating: args.rating,
             comment: args.comment || "",
-            googleReviewLink: args.rating >= 4
-              ? "https://g.page/r/CeBcAA5Lxo0aEBM/review"
-              : null,
           });
 
           if (args.rating < 4) {
