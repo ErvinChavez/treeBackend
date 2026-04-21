@@ -61,18 +61,18 @@ The backend handles all business logic, database management, authentication, job
 ## Environment Variables
 
 Create a `.env` file:
-DB_HOST=
-DB_USER=
-DB_PASS=
-DB_NAME=
+- DB_HOST=
+- DB_USER=
+- DB_PASS=
+- DB_NAME=
 
-JWT_SECRET=
-REVIEW_SECRET=
+- JWT_SECRET=
+- REVIEW_SECRET=
 
-EMAIL_USER=
-EMAIL_PASS=
+- EMAIL_USER=
+- EMAIL_PASS=
 
-FRONTEND_URL=
+- FRONTEND_URL=
 
 ---
 
