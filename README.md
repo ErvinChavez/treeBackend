@@ -1,65 +1,85 @@
-# Chavez Tree Service - Backend (Fullstack Project)
+# ChavezTree Backend API
 
-This is the **backend** for the Chavez Tree Service fullstack web application, built as a mini CRM with future SaaS potential. It provides all the server-side logic, database models, authentication, workflow automation, and file handling needed to manage jobs, clients, services, employees, feedback, and more.
+This is the backend service for the ChavezTree Tree Service application. It is built using Node.js, Express, GraphQL, and Sequelize with PostgreSQL.
 
----
-
-## 🛠 Technology Stack
-
-- **Backend:** Node.js + Express  
-- **API:** GraphQL  
-- **Database:** PostgreSQL  
-- **Authentication:** JWT with password hashing (bcrypt)  
-- **File Uploads:** Multer + Sharp (WebP image optimization)  
-- **Security:** Rate-limiting, input validation, admin-only protected routes  
-- **Other:** Helmet, CORS, dotenv
+The backend handles all business logic, database management, authentication, job tracking, and customer feedback collection.
 
 ---
 
-## 🔑 Features
+##  Features
 
-### User Roles
-
-**Admin Users** (family team):
-- Manage clients, jobs, services, employees, and feedback
-- Assign employees and services to jobs
-- Update job statuses (with workflow validation)
-- Upload before/after job photos
-- Automatic feedback creation when jobs are completed
-- Admin-only access with JWT protection
-
-**Public Users** (future frontend):
-- Submit quote requests (creates Client + Job)
-- Receive feedback prompts (rating-based routing)
-- Future integration for viewing services and testimonials
-
-### Job Workflow
-
-| Current Status   | Allowed Next Statuses         |
-|-----------------|-------------------------------|
-| pending_quote    | quote_scheduled, cancelled   |
-| quote_scheduled  | scheduled, cancelled         |
-| scheduled        | in_progress, cancelled       |
-| in_progress      | completed, cancelled         |
-| completed        | paid                          |
-| paid             | –                             |
-| cancelled        | –                             |
-
-### Core Entities
-
-- Clients  
-- Jobs (with address fields and status workflow)  
-- Services (many-to-many with jobs)  
-- Employees (many-to-many with jobs)  
-- Job_Photos (before/after images, optimized WebP)  
-- Feedback (rating-based automation)
+- GraphQL API for all data operations
+- Admin authentication (JWT-based)
+- Job management system (quotes, status updates, assignments)
+- Client management
+- Service management
+- Employee assignment system
+- Customer review system
+- Email notifications for:
+  - Job updates
+  - Review requests
+  - Low-rating feedback alerts
 
 ---
 
-## ⚡ Quick Start
+## Core Business Flow
 
-### 1️⃣ Clone the repo
+1. Admin creates a quote request (job)
+2. Job is assigned services and employees
+3. Job status is updated through lifecycle (pending → in progress → completed)
+4. When job is completed, a review request email is sent to the client
+5. Client submits feedback via frontend review page
+6. Low ratings trigger internal email notification to business
+
+---
+
+## Tech Stack
+
+- Node.js
+- Express
+- GraphQL
+- Sequelize ORM
+- PostgreSQL
+- JWT Authentication
+- Nodemailer (email service)
+
+---
+
+## Project Structure
+- src/
+- models/
+- graphql/
+- types/
+- mutations/
+- queries/
+- services/
+- utils/
+- config/
+
+---
+
+## Environment Variables
+
+Create a `.env` file:
+DB_HOST=
+DB_USER=
+DB_PASS=
+DB_NAME=
+
+JWT_SECRET=
+REVIEW_SECRET=
+
+EMAIL_USER=
+EMAIL_PASS=
+
+FRONTEND_URL=
+
+---
+
+## ▶️ Running the Server
 
 ```bash
-git clone https://github.com/<your-username>/chavez-tree-backend.git
-cd chavez-tree-backend
+npm install
+npm run dev
+
+http://localhost:4000/graphql
