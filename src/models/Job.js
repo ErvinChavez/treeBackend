@@ -15,6 +15,7 @@ const Job = sequelize.define('Job', {
     state: { type: DataTypes.STRING, allowNull: false },
     zip: { type: DataTypes.STRING, allowNull: false },
     reviewRequested: { type: DataTypes.BOOLEAN, defaultValue: false, },
+    reviewToken: { type: DataTypes.STRING, allowNull: true },
 }, { timestamps: true });
 
 //Relation: Job belongs to Client

@@ -8,6 +8,7 @@ const {
 } = require("graphql");
 
 const bcrypt = require("bcryptjs");
+const crypto = require("crypto");
 
 const Admin = require("../../models/Admin");
 const Client = require("../../models/Client");
@@ -199,24 +200,17 @@ const Mutation = new GraphQLObjectType({
         jobId: { type: new GraphQLNonNull(GraphQLInt) },
       },
       async resolve(parent, args, context) {
-        console.log("🔥 sendReviewRequest resolver HIT");
-        console.log("➡️ jobId:", args.jobId);
         if (!context.admin) throw new Error("Unauthorized");
 
         const job = await Job.findByPk(args.jobId);
-        console.log("📦 Job found:", job?.id, "reviewRequested:", job?.reviewRequested);
-        
         if (!job) throw new Error("Job not found");
 
       // Prevent duplicate requests
       if (job.reviewRequested) {
-        console.log("⚠️ Review already requested, skipping");
-        return false;
+        throw new Error("Review already requested");
       }
 
       const client = await Client.findByPk(job.clientId);
-      console.log("👤 Client:", client?.email);
-
       if (!client || !client.email) {
         throw new Error("Client email not found");
       }
@@ -225,30 +219,32 @@ const Mutation = new GraphQLObjectType({
         throw new Error("Invalid email");
       }
 
+    //generate token First
+    const token = crypto.randomBytes(32).toString("hex");
+
+    //save it to job
+    job.reviewToken = token;
+    job.reviewRequested = true;
+    await job.save();
+
     const frontendBase = process.env.FRONTEND_URL
       ? `${process.env.FRONTEND_URL}/review`
       : "http://localhost:3000/review";
-
-    console.log("🌐 Review link base:", frontendBase);
-
-    console.log("📧 Sending review email to:", client.email);
 
     const emailHtml = `
       <p>Hi ${client.name}, thanks for using Chavez Tree Service!</p>
       <p>How would you rate your experience?</p>
 
       <p>
-        <a href="${frontendBase}?jobId=${job.id}&rating=5">⭐️⭐️⭐️⭐️⭐️</a><br/>
-        <a href="${frontendBase}?jobId=${job.id}&rating=4">⭐️⭐️⭐️⭐️</a><br/>
-        <a href="${frontendBase}?jobId=${job.id}&rating=3">⭐️⭐️⭐️</a><br/>
-        <a href="${frontendBase}?jobId=${job.id}&rating=2">⭐️⭐️</a><br/>
-        <a href="${frontendBase}?jobId=${job.id}&rating=1">⭐️</a>
+        <a href="${frontendBase}?token=${token}&rating=5">⭐️⭐️⭐️⭐️⭐️</a><br/>
+        <a href="${frontendBase}?token=${token}&rating=4">⭐️⭐️⭐️⭐️</a><br/>
+        <a href="${frontendBase}?token=${token}&rating=3">⭐️⭐️⭐️</a><br/>
+        <a href="${frontendBase}?token=${token}&rating=2">⭐️⭐️</a><br/>
+        <a href="${frontendBase}?token=${token}&rating=1">⭐️</a>
       </p>
 
       <p>We appreciate your feedback!</p>
     `;
-
-    console.log("📧 Sending review email to:", client.email);
 
     try {
       await sendEmail(
@@ -260,12 +256,6 @@ const Mutation = new GraphQLObjectType({
       console.error("Email failed but continuing:", err.message);
     }
 
-    // Mark as sent
-    job.reviewRequested = true;
-    await job.save();
-
-    console.log("✅ reviewRequested saved");
-
     return true;
       },
     },
@@ -273,20 +263,22 @@ const Mutation = new GraphQLObjectType({
     submitFeedback: {
       type: FeedbackType,
       args: {
-        jobId: { type: new GraphQLNonNull(GraphQLInt) },
+        token: { type: new GraphQLNonNull(GraphQLString) },
         rating: { type: new GraphQLNonNull(GraphQLInt) },
         comment: { type: GraphQLString },
       },
       async resolve(parent, args) {
-        const job = await Job.findByPk(args.jobId);
-        if (!job) throw new Error("Job not found");
+console.log("TOKEN RECEIVED:", args.token);
+        const job = await Job.findOne({
+          where: { reviewToken: args.token},
+        });
 
-        if (job.status !== "completed") {
-          throw new Error("Feedback not allowed for this job");
-        }
+console.log("JOB FOUND:", job?.id);
+console.log("JOB STATUS:", job?.status);
+console.log("REVIEW REQUESTED:", job?.reviewRequested);
 
-        if (!job.reviewRequested) {
-          throw new Error("Review not requested for this job");
+        if (!job || job.status !== "completed" || !job.reviewRequested) {
+          throw new Error("Invalid or expired review link")
         }
 
         if (args.rating < 1 || args.rating > 5) {
@@ -325,8 +317,12 @@ const Mutation = new GraphQLObjectType({
               console.error("Email failed:", emailErr);
             } 
           }
+
+          //invalidate token AFTER successful submission
+          job.reviewToken = null;
+          await job.save();
           
-        return feedback;
+          return feedback;
 
         } catch (err) {
           if (err.name === "SequelizeUniqueConstraintError") {
