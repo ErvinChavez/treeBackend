@@ -37,6 +37,12 @@ const Mutation = new GraphQLObjectType({
         password: { type: new GraphQLNonNull(GraphQLString) },
       },
       async resolve(parent, args) {
+
+        //block in production
+        if (process.env.NODE_ENV === "production") {
+          throw new Error("Admin registration is disabled")
+        }
+
         const existing = await Admin.findOne({ where: { email: args.email } });
         if (existing) throw new Error("Admin already exists");
 
