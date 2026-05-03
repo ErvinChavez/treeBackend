@@ -5,7 +5,10 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const path = require('path');
-require('dotenv').config();
+
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config();
+}
 
 // Database
 const sequelize = require('./config/db');
@@ -54,22 +57,26 @@ app.use(
           "'self'",
           "data:",
           "https:",
-          "http://localhost:5000", // allow images from backend
-          "http://localhost:3000", // allow images from frontend
+          "http://localhost:5000", // allow images from backend (Later to supabase Storage)
+          "http://localhost:3000", // allow images from frontend (Later to supabase Storage)
         ],
 
-        connectSrc: [
-          "'self'",
-          "http://localhost:5000", // backend
-          "http://localhost:3000"  // frontend
-        ],
+        connectSrc: ["'self'"],
       },
     },
     crossOriginEmbedderPolicy: false,
   })
 );
 
-app.use(cors());
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  "http://localhost:3000"
+];
+app.use(cors({
+  origin: allowedOrigins,
+  credentials: true
+}));
+
 app.use(express.urlencoded({ extended: true })); // needed to read POST form data
 app.use(express.json({ limit: '5mb' })); // limit JSON payloads
 app.use(
@@ -79,7 +86,7 @@ app.use(
   })
 );
 
-// Serve static files from uploads
+// Serve static files from uploads (Will change to Supabase Storage later)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads'),{
   setHeaders: (res, path, stat) => {
     res.setHeader('Access-Control-Allow-Origin', '*');      // allow any origin
