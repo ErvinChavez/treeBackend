@@ -7,10 +7,6 @@ const supabase = require("../supabase");
 
 exports.uploadPhoto = async (req, res) => {
   try {
-    
-  console.log("BODY:", req.body);
-  console.log("FILE:", req.file);
-
     const { jobId, type } = req.body;
       
     //validate file exists
@@ -20,8 +16,6 @@ exports.uploadPhoto = async (req, res) => {
 
     //validate job exists
     const job = await Job.findByPk(jobId);
-    console.log("jobId:", jobId);
-    console.log("type:", type);
     if (!job) {
       return res.status(400).json({ error: 'Job not found' });
     }
@@ -32,19 +26,15 @@ exports.uploadPhoto = async (req, res) => {
         return res.status(400).json({ error: 'Invalid photo type' });
       }
 
-    console.log("Processing image...");
     //resize and covert to Webp with Sharp
     const buffer = await sharp(req.file.buffer)
       .resize({width: 1200}) //max width 1200px
       .webp({ quality: 80 })
       .toBuffer();
 
-    console.log("Image processed successfully");
-
     //generate uniqueName
     const uniqueName = `${Date.now()}-${Math.round(Math.random() * 1e9)}.webp`;
-    
-    console.log("Uploading to Supabase...");
+  
     //upload to Supabase
     const { error } = await supabase.storage
       .from("job-photos") //bucket name
@@ -56,9 +46,6 @@ exports.uploadPhoto = async (req, res) => {
     if (error){
       console.error("SUPABASE ERROR:", error);
       throw error;}
-
-    console.log("Upload success"); 
-
 
     // get public URL
     const { data } = supabase.storage
