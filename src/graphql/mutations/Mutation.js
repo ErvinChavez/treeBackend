@@ -274,14 +274,9 @@ const Mutation = new GraphQLObjectType({
         comment: { type: GraphQLString },
       },
       async resolve(parent, args) {
-console.log("TOKEN RECEIVED:", args.token);
         const job = await Job.findOne({
           where: { reviewToken: args.token},
         });
-
-console.log("JOB FOUND:", job?.id);
-console.log("JOB STATUS:", job?.status);
-console.log("REVIEW REQUESTED:", job?.reviewRequested);
 
         if (!job || job.status !== "completed" || !job.reviewRequested) {
           throw new Error("Invalid or expired review link")
