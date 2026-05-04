@@ -20,6 +20,8 @@ exports.uploadPhoto = async (req, res) => {
 
     //validate job exists
     const job = await Job.findByPk(jobId);
+    console.log("jobId:", jobId);
+    console.log("type:", type);
     if (!job) {
       return res.status(400).json({ error: 'Job not found' });
     }
@@ -57,7 +59,7 @@ exports.uploadPhoto = async (req, res) => {
 
     console.log("Upload success"); 
 
-    
+
     // get public URL
     const { data } = supabase.storage
       .from("job-photos")
