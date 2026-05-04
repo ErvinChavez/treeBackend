@@ -7,6 +7,7 @@ const supabase = require("../supabase");
 
 exports.uploadPhoto = async (req, res) => {
   try {
+    
     const { jobId, type } = req.body;
       
     //validate file exists
@@ -63,6 +64,6 @@ exports.uploadPhoto = async (req, res) => {
 
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Upload failed" });
+    res.status(500).json({ error: err.message });
   }
 };
