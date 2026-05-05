@@ -253,15 +253,13 @@ const Mutation = new GraphQLObjectType({
       await sendEmail(
         client.email,
         "How did we do? Rate Chavez Tree Service",
-          emailHtml
+        emailHtml
       );    
       
       //save it to job
       job.reviewToken = token;
       job.reviewRequested = true;
       await job.save();
-
-      console.log("✅ Review email sent to:", client.email);
 
       return true;
     
