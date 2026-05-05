@@ -228,10 +228,7 @@ const Mutation = new GraphQLObjectType({
     //generate token First
     const token = crypto.randomBytes(32).toString("hex");
 
-    //save it to job
-    job.reviewToken = token;
-    job.reviewRequested = true;
-    await job.save();
+
 
     const frontendBase = process.env.FRONTEND_URL
       ? `${process.env.FRONTEND_URL}/review`
@@ -257,12 +254,21 @@ const Mutation = new GraphQLObjectType({
         client.email,
         "How did we do? Rate Chavez Tree Service",
           emailHtml
-      );
-    } catch (err) {
-      console.error("Email failed but continuing:", err.message);
-    }
+      );    
+      
+      //save it to job
+      job.reviewToken = token;
+      job.reviewRequested = true;
+      await job.save();
 
-    return true;
+      console.log("✅ Review email sent to:", client.email);
+
+      return true;
+    
+    } catch (err) {
+      console.error("Email failed:", err);
+      throw new Error("Failed to send review email");
+    }
       },
     },
 
