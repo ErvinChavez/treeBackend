@@ -24,6 +24,12 @@ transporter.verify((error) => {
 
 async function sendEmail(to, subject, html) {
   try {
+
+    console.log("EMAIL ATTEMPT:", {
+      to,
+      user: process.env.EMAIL_USER,
+    });
+
     await transporter.sendMail({
       from: EMAIL_USER,
       to,
