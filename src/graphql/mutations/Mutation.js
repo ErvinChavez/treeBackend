@@ -33,6 +33,7 @@ const { isValidStatusChange } = require("../../services/jobService");
 const JobType = require("../types/JobType");
 const FeedbackType = require("../types/FeedbackType");
 const EmployeeType = require("../types/EmployeeType");
+const ServiceType = require("../types/ServiceType");
 
 //main mutation object
 const Mutation = new GraphQLObjectType({
@@ -84,7 +85,7 @@ const Mutation = new GraphQLObjectType({
     },
     //protected admin-only mutation
     createService: {
-      type: require("../types/ServiceType"),
+      type: ServiceType,
       args: {
         name: { type: new GraphQLNonNull(GraphQLString) },
         description: { type: GraphQLString },
@@ -101,7 +102,7 @@ const Mutation = new GraphQLObjectType({
     },
     //update existing service
     updateService: {
-      type: require("../types/ServiceType"),
+      type: ServiceType,
       args: {
         id: { type: new GraphQLNonNull(GraphQLInt) },
         name: { type: GraphQLString },
