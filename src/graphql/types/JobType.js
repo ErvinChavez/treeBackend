@@ -83,7 +83,7 @@ const JobType = new GraphQLObjectType({
     //job has a client
     client: {
       //job belongs to this client
-      type: require(ClientType),
+      type: ClientType,
       //fetch DB data of client
       resolve(parent) {
         return Client.findByPk(parent.clientId);
