@@ -1,89 +1,106 @@
-//shape of API object
+//GraphQL core types
 const {
-  //graphQL object structure
   GraphQLObjectType,
-  //string, true/false fields
   GraphQLString,
   GraphQLBoolean,
-  //array/list
   GraphQLList,
 } = require("graphql");
 
-//import related graphQL types
+//graphQl related types
 const ServiceType = require("./ServiceType");
 const FeedbackType = require("./FeedbackType");
 const EmployeeType = require("./EmployeeType");
 
-//import used models
+//DB models
 const Client = require("../../models/Client");
 const Feedback = require("../../models/Feedback");
 const JobPhoto = require("../../models/JobPhoto");
 
-//create graphQL of job
+/**
+ * Job GraphQL type
+ * Represents the core business workflow entity
+ * Includes relationships to services, employees, feedback, and media
+ */
 const JobType = new GraphQLObjectType({
-  //GraphQL schema name
   name: "Job",
+
+  //wrapped in a function to avoid circular dependency issues
   fields: () => ({
     id: { type: GraphQLString },
     status: { type: GraphQLString },
     createdAt: { type: GraphQLString },
     scheduledDate: { type: GraphQLString },
+
+    //job location details
     street: { type: GraphQLString },
     city: { type: GraphQLString },
     state: { type: GraphQLString },
     zip: { type: GraphQLString },
+
     clientId: { type: GraphQLString },
+
     //track if review email sent
     reviewRequested: { type: GraphQLBoolean },
 
-    //job can have many services
+    /**
+     * Many-to-many relationship:
+     * Job to/from Services
+     */
     services: {
-      //return array of services
       type: new GraphQLList(ServiceType),
-      //fetch the DB data for services
+      
       resolve(parent) {
         return parent.getServices();
       }
     },
     
-    //job has one feedback
+    /**
+     * One-to-one relationship:
+     * Job to/from Feedback
+     */
     feedback: {
       type: FeedbackType,
-      //fetch DB data review for the job
+      
       resolve(parent) {
         return Feedback.findOne({ where: { jobId: parent.id } });
       }
     },
 
-    //job can have multiple images
+    /**
+     * Job photo gallery
+     * Returns only image URLs for frontend rendering
+     */
     photos: {
-      //return an array of image URLs
       type: new GraphQLList(GraphQLString),
-      //fetch DB data photos for the job
+      
       async resolve(parent) {
         const photos = await JobPhoto.findAll({
           where: { jobId: parent.id }
         });
-        //extract only the url
+        
         return photos.map(p => p.url);
       }
     },
 
-    //job can have many-to-many employees
+     /**
+     * Many-to-many relationship:
+     * Job to/from Employees
+     */
     employees: {
-      //return an array of employees
       type: new GraphQLList(EmployeeType),
-      //fetch DB data of the employees for the job
+      
       resolve(parent) {
         return parent.getEmployees();
       }
     },
 
-    //job has a client
+     /**
+     * Many-to-one relationship:
+     * Job to/from Client
+     */
     client: {
-      //job belongs to this client
       type: require("./ClientType"),
-      //fetch DB data of client
+      
       resolve(parent) {
         return Client.findByPk(parent.clientId);
       }

@@ -1,26 +1,27 @@
-//shape of the API object
+//GraphQL core types
 const {
-  //an object structure
   GraphQLObjectType,
-  //string fields
   GraphQLString,
-  //arrays/lists
   GraphQLList
 } = require("graphql");
 
-//import related type
 const JobType = require("./JobType");
-//graphQl of a cleint
+
+/**
+ * Client GraphQL type
+ * Represents customer data and related job records
+ */
 const ClientType = new GraphQLObjectType({
-  //graphQl schema name
   name: "Client",
-  //value function wrapped to allow loading from client and job first
+  
+  // wrapped in a function to prevent circular dependency issues
   fields: () => ({
     id: { type: GraphQLString },
     name: { type: GraphQLString },
     email: { type: GraphQLString },
     phone: { type: GraphQLString },
-    //client can have many jobs
+
+    //client can have many jobs(one-to-many)
     jobs: { type: new GraphQLList(require("./JobType")) },
   }),
 });

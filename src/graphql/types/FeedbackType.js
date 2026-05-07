@@ -1,17 +1,18 @@
-//shape of API object
+//GraphQL core types
 const {
-    //graphQL object structure
     GraphQLObjectType,
-    //string fields
     GraphQLString,
-    //integer fields
     GraphQLInt
 } = require("graphql");
-//create new feedback API object
+
+/**
+ * Feedback GraphQL type
+ * Represents customer review and rating data
+ */
 const FeedbackType = new GraphQLObjectType({
-    //GraphQl schema name
     name: 'Feedback',
-    //function wrapped for future updates
+    
+    //wrapped in a function for consistency and future relationship expansion
     fields: () => ({
         id: { type: GraphQLString },
         rating: { type: GraphQLInt },
