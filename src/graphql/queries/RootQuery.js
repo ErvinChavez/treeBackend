@@ -26,7 +26,7 @@ const RootQuery = new GraphQLObjectType({
   //internal GraphQL naming
   name: "RootQueryType",
   //fields: every graphQL query endpoint
-  fields: {
+  fields: () => ({
     //allows frontend to request all clients
     clients: {
       //and array of clienttype objects
@@ -140,7 +140,7 @@ const RootQuery = new GraphQLObjectType({
         return total / feedbacks.length;
       },
     },
-  },
+  }),
 });
 
 module.exports = RootQuery;
