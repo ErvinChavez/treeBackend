@@ -1,26 +1,22 @@
-//import sequelize(ORM style, can use JS for SQL writing)
+// PostgreSQL connection using Sequelize ORM
+// Loads environment variables for secure config
 const { Sequelize } = require('sequelize');
-//Load .env
 require('dotenv').config();
 
-//Connect to PostgreSQL
+// Create reusable DB connection instance
 const sequelize = new Sequelize(
     process.env.DATABASE_URL, {
-        //using postgreSQL
         dialect: 'postgres',
-        //disable SQL logs in console
+        //disable SQL logs in production
         logging: false,
-        //extra postgreSQL connnection settings
         dialectOptions: {
-            //enables encrypted DB connection
             ssl: {
-                //force SSL usage to encrypt DB traffic
+                //force SSL usage to encrypt DB traffic for (Supabase/Render)
                 require: true,
-                //accept SSL certificate even if not fully verified
+                //accept SSL certificate
                 rejectUnauthorized: false,
             }
         }
     }
 );
-//make DB coneection reusable everywhere
 module.exports = sequelize;
