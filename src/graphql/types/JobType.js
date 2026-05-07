@@ -13,7 +13,6 @@ const {
 const ServiceType = require("./ServiceType");
 const FeedbackType = require("./FeedbackType");
 const EmployeeType = require("./EmployeeType");
-const ClientType = require("./ClientType");
 
 //import used models
 const Client = require("../../models/Client");
@@ -83,7 +82,7 @@ const JobType = new GraphQLObjectType({
     //job has a client
     client: {
       //job belongs to this client
-      type: ClientType,
+      type: require("./ClientType"),
       //fetch DB data of client
       resolve(parent) {
         return Client.findByPk(parent.clientId);

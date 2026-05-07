@@ -21,7 +21,7 @@ const ClientType = new GraphQLObjectType({
     email: { type: GraphQLString },
     phone: { type: GraphQLString },
     //client can have many jobs
-    jobs: { type: new GraphQLList(JobType) },
+    jobs: { type: new GraphQLList(require("./JobType")) },
   }),
 });
 
