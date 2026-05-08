@@ -1,8 +1,12 @@
-//Job model with address field
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/db');
 const Client = require('./Client');
 
+/**
+ * Job model
+ * Core business entity representing a customer service request/work order
+ * Includes workflow state, scheduling, location, and review tracking
+ */
 const Job = sequelize.define('Job', {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     status: {
@@ -18,7 +22,7 @@ const Job = sequelize.define('Job', {
     reviewToken: { type: DataTypes.STRING, allowNull: true },
 }, { timestamps: true });
 
-//Relation: Job belongs to Client
+//Relation: Job belongs to a single Client (many-to-one)
 Job.belongsTo(Client, { foreignKey: 'clientId' });
 Client.hasMany(Job, { foreignKey: 'clientId' });
 
