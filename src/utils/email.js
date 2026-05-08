@@ -13,24 +13,35 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+//error finding
+transporter.verify((error, success) => {
+  if (error) {
+    console.error("Email transporter failed:", error);
+  } else {
+    console.log("Email transporter ready");
+  }
+});
+
 async function sendEmail(to, subject, html) {
   try {
-    console.log("📨 EMAIL ATTEMPT:", {
+    console.log("EMAIL ATTEMPT:", {
       to,
       user: process.env.EMAIL_USER,
     });
 
-    await transporter.sendMail({
+    const info = await transporter.sendMail({
       from: `"Chavez Tree Service" <${EMAIL_USER}>`,
       to,
       subject,
       html,
     });
 
-    console.log("✅ Email sent to", to);
+    console.log("STEP 2: after sendMAil", info);
+
+    return info;
 
   } catch (err) {
-    console.error("❌ EMAIL FULL ERROR:");
+    console.error("EMAIL FULL ERROR:");
     console.error(err); // IMPORTANT (not just message)
     throw err;
   }
