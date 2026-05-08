@@ -34,10 +34,12 @@ const schema = require('./schema');
 // REST endpoints(for uploads and reviews)
 const uploadRoutes = require('./routes/uploadRoutes');
 
+
 //handles JWT authentication
 const { getAdminFromToken, protect } = require('./middleware/authMiddleware'); // JWT auth for uploads
 
 const app = express();
+app.set('trust proxy', 1);
 
 //helmet config to enforce safe content loading policies for broswer
 app.use(
@@ -94,6 +96,8 @@ app.use(
   rateLimit({
     windowMs: 15 * 60 * 1000, // 15 min
     max: 100, // limit each IP
+    standardHeaders: true,
+    legacyHeaders: false,
   })
 );
 
