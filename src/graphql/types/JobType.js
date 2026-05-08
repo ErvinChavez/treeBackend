@@ -71,11 +71,10 @@ const JobType = new GraphQLObjectType({
      * Returns only image URLs for frontend rendering
      */
     photos: {
-      type: new GraphQLList(GraphQLString),
-      
       async resolve(parent) {
         const photos = await JobPhoto.findAll({
-          where: { jobId: parent.id }
+          where: { jobId: parent.id },
+          order: [['createdAt', 'ASC']]
         });
         
         return photos.map(p => p.url);

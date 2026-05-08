@@ -19,7 +19,10 @@ const supabase = require("../supabase");
 
 exports.uploadPhoto = async (req, res) => {
   try {
-    const { jobId, type } = req.body;
+    const { jobId } = req.body;
+    if (!jobId) {
+      return res.status(400).json({ error: "jobId is required"});
+    }
       
     //validate if multer received a file
     if (!req.file) {
@@ -30,12 +33,6 @@ exports.uploadPhoto = async (req, res) => {
     const job = await Job.findByPk(jobId);
     if (!job) {
       return res.status(400).json({ error: 'Job not found' });
-    }
-
-    //validate type (before/after only)
-    const validTypes = ['before', 'after'];
-    if (type && !validTypes.includes(type)) {
-      return res.status(400).json({ error: 'Invalid photo type' });
     }
 
     //optimize image, resize and covert to WebP
@@ -67,10 +64,9 @@ exports.uploadPhoto = async (req, res) => {
     const publicUrl = data.publicUrl;
 
     //store image reference in PostgreSQL
-    const photo = await JobPhoto.create({
+    await JobPhoto.create({
       jobId,
       url: publicUrl,
-      type: type || 'before'
     });
   
 

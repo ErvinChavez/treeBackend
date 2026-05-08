@@ -16,11 +16,17 @@ const fileFilter = (req, file, cb) => {
     }
 
     //allow image uploads only
-    if (file.mimetype.startsWith('image/')) {
-        cb(null, true);
-    } else {
-        cb(new Error('Only image files allowed'), false);
+    const allowedTypes = [
+        "image/jpeg",
+        "image/png",
+        "image/webp"
+    ];
+
+    if (!allowedTypes.includes(file.mimetype)) {
+        return cb(new Error("Only image files allowed"), false);
     }
+
+    cb(null, true);
 };
 
 /**
