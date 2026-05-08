@@ -1,9 +1,9 @@
 //import graphQLschema
 const { GraphQLSchema } = require('graphql');
 
-//import of all READ operations, used to FETCH data
+//READ operations, used to fetch data
 const RootQuery = require("./graphql/queries/RootQuery");
-//import to WRITE operations, used to change data
+//WRITE operations, used to change data
 const Mutation = require("./graphql/mutations/Mutation");
 
 //export the full graphQL API structure
