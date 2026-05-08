@@ -12,8 +12,4 @@ const JobService = sequelize.define('JobService', {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
 }, { timestamps: true });
 
-//Many-to-Many relationships
-Job.belongsToMany(Service, { through: JobService, foreignKey: 'jobId' });
-Service.belongsToMany(Job, { through: JobService, foreignKey: 'serviceId' });
-
 module.exports = JobService;

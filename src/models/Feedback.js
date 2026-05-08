@@ -14,8 +14,4 @@ const Feedback = sequelize.define('Feedback', {
     jobId: { type: DataTypes.INTEGER, allowNull: false, unique: true},
 }, { timestamps: true });
 
-//Relation: Feedback belongs to Job(one-to-one)
-Feedback.belongsTo(Job, { foreignKey: 'jobId' });
-Job.hasOne(Feedback, { foreignKey: 'jobId' });
-
 module.exports = Feedback;

@@ -22,8 +22,4 @@ const Job = sequelize.define('Job', {
     reviewToken: { type: DataTypes.STRING, allowNull: true },
 }, { timestamps: true });
 
-//Relation: Job belongs to a single Client (many-to-one)
-Job.belongsTo(Client, { foreignKey: 'clientId' });
-Client.hasMany(Job, { foreignKey: 'clientId' });
-
 module.exports = Job;

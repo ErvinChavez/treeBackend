@@ -12,8 +12,4 @@ const JobPhoto = sequelize.define('JobPhoto', {
     url: { type: DataTypes.STRING, allowNull: false },
 }, { timestamps: true });
 
-//Relation: JobPhoto belongs to one Job
-JobPhoto.belongsTo(Job, { foreignKey: 'jobId' });
-Job.hasMany(JobPhoto, { foreignKey: 'jobId' });
-
 module.exports = JobPhoto;

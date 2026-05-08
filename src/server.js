@@ -15,30 +15,18 @@ const rateLimit = require('express-rate-limit');
 if (process.env.NODE_ENV !== 'production') {
   require('dotenv').config();
 }
-// database connection
-const sequelize = require('./config/db');
-
-// Import models to register with sequelize
-const Client = require('./models/Client');
-const Job = require('./models/Job');
-const Employee = require('./models/Employee');
-const Service = require('./models/Service');
-const JobPhoto = require('./models/JobPhoto');
-const Feedback = require('./models/Feedback');
-const JobService = require('./models/JobService');
-const JobEmployee = require('./models/JobEmployee');
+//load db,models, associations
+require('./models');
 
 // entire graphQL schema
 const schema = require('./schema');
-
 // REST endpoints(for uploads and reviews)
 const uploadRoutes = require('./routes/uploadRoutes');
-
-
 //handles JWT authentication
 const { getAdminFromToken, protect } = require('./middleware/authMiddleware'); // JWT auth for uploads
 
 const app = express();
+
 app.set('trust proxy', 1);
 
 //helmet config to enforce safe content loading policies for broswer
