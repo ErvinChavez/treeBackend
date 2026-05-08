@@ -4,29 +4,6 @@ const Job = require("../models/Job");
 
 const router = express.Router();
 
-// //external google reviews
-// const GOOGLE_REVIEW_LINK = "https://g.page/r/CeBcAA5Lxo0aEBM/review";
-
-
-// router.get("/", async (req, res) => {
-//   const { jobId, rating } = req.query;
-
-//   if (!jobId || !rating) return res.status(400).json({ error: "Missing jobId or rating" });
-
-//   const job = await Job.findByPk(jobId);
-//   if (!job) return res.status(404).json({ error: "Job not found" });
-
-//   const numericRating = parseInt(rating);
-
-//   if (numericRating >= 4) {
-//     // High rating → redirect to Google review
-//     return res.json({ redirect: GOOGLE_REVIEW_LINK });
-//   } else {
-//     // Low rating → frontend will show form
-//     return res.json({ jobId: job.id, rating: numericRating });
-//   }
-// });
-
 // POST /review
 router.post("/", express.json(), async (req, res) => {
   const { jobId, rating, comment } = req.body;
