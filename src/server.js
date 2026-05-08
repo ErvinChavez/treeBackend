@@ -15,6 +15,8 @@ const rateLimit = require('express-rate-limit');
 if (process.env.NODE_ENV !== 'production') {
   require('dotenv').config();
 }
+
+const sequelize = require('./config/db');
 //load db,models, associations
 require('./models');
 
@@ -22,8 +24,6 @@ require('./models');
 const schema = require('./schema');
 // REST endpoints(for uploads and reviews)
 const uploadRoutes = require('./routes/uploadRoutes');
-//handles JWT authentication
-const { getAdminFromToken, protect } = require('./middleware/authMiddleware'); // JWT auth for uploads
 
 const app = express();
 
