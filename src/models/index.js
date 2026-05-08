@@ -12,7 +12,8 @@ require('./JobService');
 require('./JobEmployee');
 
 // Load associations 
-require('./Associations');
+const applyAssociations = require('./Associations');
+applyAssociations();
 
 /**
  * Centralized database export
