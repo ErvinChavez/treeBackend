@@ -4,8 +4,8 @@ const Job = require("../models/Job");
 
 const router = express.Router();
 
-//external google reviews
-const GOOGLE_REVIEW_LINK = "https://g.page/r/CeBcAA5Lxo0aEBM/review";
+// //external google reviews
+// const GOOGLE_REVIEW_LINK = "https://g.page/r/CeBcAA5Lxo0aEBM/review";
 
 
 // router.get("/", async (req, res) => {
@@ -41,7 +41,7 @@ router.post("/", express.json(), async (req, res) => {
 
   feedback.rating = parseInt(rating);
   feedback.comment = comment || "";
-  feedback.googleReviewLink = null;
+  // feedback.googleReviewLink = null;
 
   await feedback.save();
 
