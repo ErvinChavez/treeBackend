@@ -1,5 +1,7 @@
 //server
 const express = require('express');
+//handle file paths
+const path = require('path');
 //GraphQL endpoint handler
 const { graphqlHTTP } = require('express-graphql');
 //allow frontend to connect
@@ -8,8 +10,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 //prevent abuse/spam
 const rateLimit = require('express-rate-limit');
-//handle file paths
-const path = require('path');
+
 //load .env for development
 if (process.env.NODE_ENV !== 'production') {
   require('dotenv').config();
@@ -31,7 +32,6 @@ const JobEmployee = require('./models/JobEmployee');
 const schema = require('./schema');
 
 // REST endpoints(for uploads and reviews)
-const reviewRoutes = require('./routes/review');
 const uploadRoutes = require('./routes/uploadRoutes');
 
 //handles JWT authentication
@@ -108,7 +108,6 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads'),{
 
 //REST endpoints
 app.use('/api/upload', uploadRoutes);
-app.use("/review", reviewRoutes);
 
 
 // Test route (health check)

@@ -1,22 +1,6 @@
-const nodemailer = require("nodemailer");
+const { Resend } = require("resend");
 
-const { EMAIL_USER, EMAIL_PASS } = process.env;
-
-/**
- * Email transporter configuration
- * Uses SMTP (Gmail) for sending transactional emails
- */
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false,
-  // family:4, //Forces IPv4 usage
-  auth: {
-    user: EMAIL_USER,
-    pass: EMAIL_PASS,
-  },
-});
-
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 /**
  * Sends transactional email
@@ -24,16 +8,23 @@ const transporter = nodemailer.createTransport({
  */
 async function sendEmail(to, subject, html) {
   try {
-    await transporter.sendMail({
-      from: EMAIL_USER,
+    console.log("EMAIL ATTEMPT:", {
+      to,
+    });
+
+    const data = await resend.emails.send({
+      from: "Chavez Tree Service <onboarding@resend.dev>",
       to,
       subject,
       html,
     });
 
+    console.log("Email sent:", data);
+    return data;
+
   } catch (err) {
     console.error("Email error:", err);
-    throw err;
+    throw new Error("failed to send email");
   }
 }
 
