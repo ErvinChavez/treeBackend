@@ -21,7 +21,7 @@ const Feedback = require("../../models/Feedback");
 const Employee = require("../../models/Employee");
 
 //shared services
-const sendEmail = require("../../utils/email");
+const {sendEmail, sendQuoteNotification} = require("../../utils/email");
 const { generateToken } = require("../../services/authService");
 const { isValidStatusChange } = require("../../services/jobService");
 
@@ -175,14 +175,29 @@ const Mutation = new GraphQLObjectType({
           state: args.state,
           zip: args.zip,
         });
-
+        
         //attach the services
+        let services = []
+       
         if (args.serviceIds?.length > 0) {
-          const services = await Service.findAll({
+            services = await Service.findAll({
             where: { id: args.serviceIds },
           });
           await job.addServices(services);
         }
+
+        //Send new Client Notification
+        await sendQuoteNotification({
+          clientName: args.clientName,
+          clientEmail: args.clientEmail,
+          clientPhone: args.clientPhone,
+          street: args.street,
+          city: args.city,
+          state: args.state,
+          zip: args.zip,
+          jobId: job.id,
+          services: services.map((s) => s.name)
+        });
 
         return job;
       },
@@ -319,7 +334,7 @@ const Mutation = new GraphQLObjectType({
           if (args.rating < 4) {
             try {
               await sendEmail(
-                process.env.EMAIL_USER,
+                process.env.REVIEW_EMAIL,
                 `Low Rating Feedback - Job #${job.id}`,
                 `
                   <h2>New Low Rating Feedback</h2>
