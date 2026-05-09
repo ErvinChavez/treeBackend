@@ -10,7 +10,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 //prevent abuse/spam
 const rateLimit = require('express-rate-limit');
-const { getAdminFromToken } = require('./middleware/authMiddleware');
+
 
 //load .env for development
 if (process.env.NODE_ENV !== 'production') {
@@ -18,6 +18,10 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 const sequelize = require('./config/db');
+
+//auth middleware
+const { getAdminFromToken } = require('./middleware/authMiddleware');
+
 //load db,models, associations
 require('./models');
 
