@@ -47,8 +47,11 @@ const Mutation = new GraphQLObjectType({
       },
       async resolve(parent, args) {
         //block in production, prevent randon admin creation publicly
-        if (process.env.NODE_ENV === "production") {
-          throw new Error("Admin registration is disabled")
+        const isProduction = process.env.NODE_ENV === "production";
+        const allowBootstrap = process.env.ALLOW_ADMIN_BOOTSTRAP === "true";
+
+        if (isProduction && !allowBootstrap) {
+          throw new Error("Admin creation disabled in production");
         }
         //prevent duplicate admin accounts
         const existing = await Admin.findOne({ where: { email: args.email } });
