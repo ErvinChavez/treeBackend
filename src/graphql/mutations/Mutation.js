@@ -38,7 +38,7 @@ const ServiceType = require("../types/ServiceType");
 const Mutation = new GraphQLObjectType({
   name: "Mutation",
   fields: {
-    //admin auth
+    //admin auth 
     registerAdmin: {
       type: GraphQLString,
       args: {
