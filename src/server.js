@@ -73,6 +73,8 @@ app.use(
 //restricts frontend access to trusted origins only
 const allowedOrigins = [
   process.env.FRONTEND_URL,
+  "https://ervinchavez.com",
+  "https://www.ervinchavez.com",
   "http://localhost:3000"
 ];
 app.use(cors({
