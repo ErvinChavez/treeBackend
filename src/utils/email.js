@@ -12,18 +12,23 @@ async function sendEmail(to, subject, html) {
     });
 
     const data = await resend.emails.send({
-      from: "Chavez Tree Service <onboarding@resend.dev>",
+      from: "Chavez Tree Service <noreply@ervinchavez.com>",
       to,
       subject,
       html,
     });
 
+    if (data.error) {
+      console.error("Resend error:", data.error);
+      throw new Error(data.error.message || "Email failed");
+    }
+
     console.log("Email sent:", data);
     return data;
 
   } catch (err) {
-    console.error("Email error:", err);
-    throw new Error("failed to send email");
+    console.error("Email exception:", err);
+    throw err;
   }
 }
 
