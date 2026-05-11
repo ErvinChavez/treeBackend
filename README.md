@@ -1,85 +1,122 @@
-# ChavezTree Backend API
+# Chavez Tree Service Backend API
 
-This is the backend service for the ChavezTree Tree Service application. It is built using Node.js, Express, GraphQL, and Sequelize with PostgreSQL.
+Backend API and business logic layer for the Chavez Tree Service platform.
 
-The backend handles all business logic, database management, authentication, job tracking, and customer feedback collection.
+This production-ready backend powers:
+- customer quote requests
+- admin job management
+- review collection
+- automated email workflows
+- employee/service relationships
+- secure authentication
 
----
-
-##  Features
-
-- GraphQL API for all data operations
-- Admin authentication (JWT-based)
-- Job management system (quotes, status updates, assignments)
-- Client management
-- Service management
-- Employee assignment system
-- Customer review system
-- Email notifications for:
-  - Job updates
-  - Review requests
-  - Low-rating feedback alerts
+Built with Node.js, Express, GraphQL, Sequelize, PostgreSQL, and Supabase.
 
 ---
 
-## Core Business Flow
+# Features
 
-1. Admin creates a quote request (job)
-2. Job is assigned services and employees
-3. Job status is updated through lifecycle (pending → in progress → completed)
-4. When job is completed, a review request email is sent to the client
-5. Client submits feedback via frontend review page
-6. Low ratings trigger internal email notification to business
+## Lead Intake System
+- Customer quote request submission
+- Automatic client creation and deduplication
+- Job creation pipeline
+- Service selection support
+- Automated business email notifications
+
+## Admin Authentication
+- JWT-based authentication
+- Protected admin routes
+- Secure password hashing with bcrypt
+- Production-safe admin bootstrap protection
+
+## Job Management
+- Job lifecycle tracking
+- Status workflow management
+- Employee assignments
+- Service assignments
+- Job photo support
+
+## Customer Review System
+- Secure tokenized review links
+- One-time review submission protection
+- Rating and comment collection
+- Automated low-rating alerts
+
+## Security
+- Helmet security middleware
+- Rate limiting
+- CORS protection
+- Environment variable protection
+- Token validation middleware
+
+## Email Automation
+- Quote request notifications
+- Review request emails
+- Internal low-rating alerts
+- Powered by Resend
 
 ---
 
-## Tech Stack
+# Tech Stack
 
+## Backend
 - Node.js
 - Express
 - GraphQL
 - Sequelize ORM
-- PostgreSQL
-- JWT Authentication
-- Nodemailer (email service)
+
+## Database & Storage
+- PostgreSQL (Supabase)
+- Supabase Storage
+
+## Authentication & Security
+- JWT
+- bcryptjs
+- Helmet
+- express-rate-limit
+
+## Deployment
+- Render (Backend Hosting)
+- Vercel (Frontend Hosting)
+- Cloudflare DNS
 
 ---
 
-## Project Structure
-- src/
-- models/
-- graphql/
-- types/
-- mutations/
-- queries/
-- services/
-- utils/
-- config/
+# Core Business Workflow
+
+1. Customer submits quote request
+2. System creates or updates client record
+3. Job is created with pending quote status
+4. Selected services are attached to job
+5. Business receives email notification
+6. Admin manages workflow through dashboard
+7. Completed jobs trigger review requests
+8. Customer submits review securely
 
 ---
 
-## Environment Variables
+# Environment Variables
 
 Create a `.env` file:
-- DB_HOST=
-- DB_USER=
-- DB_PASS=
-- DB_NAME=
 
-- JWT_SECRET=
-- REVIEW_SECRET=
+```env
+# Database
+DB_HOST=
+DB_USER=
+DB_PASS=
+DB_NAME=
 
-- EMAIL_USER=
-- EMAIL_PASS=
+# Authentication
+JWT_SECRET=
+REVIEW_SECRET=
 
-- FRONTEND_URL=
+# Frontend
+FRONTEND_URL=
 
----
+# Resend Email
+RESEND_API_KEY=
+NEW_QUOTE_EMAIL=
+REVIEW_EMAIL=
 
-## ▶️ Running the Server
-
-```bash
-npm install
-npm run dev
-
-http://localhost:4000/graphql
+# Admin Bootstrap
+ALLOW_ADMIN_BOOTSTRAP=false

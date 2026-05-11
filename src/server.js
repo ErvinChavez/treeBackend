@@ -96,7 +96,6 @@ app.use(
   })
 );
 
-//Serve static files from uploads (development only)
 //(Supabase Storage for deployment)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads'),{
   setHeaders: (res, path, stat) => {
@@ -158,7 +157,7 @@ sequelize
   .authenticate()
   .then(() => {
     console.log('PostgreSQL connected successfully!');
-    return sequelize.sync(); // Change to sequelize.sync({ alter: true }) // for dev only
+    return sequelize.sync(); //dev only: { alter: true }
   })
   .then(() => {
     console.log('All models synced to DB');
