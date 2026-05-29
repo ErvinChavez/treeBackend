@@ -3,6 +3,8 @@ const { GraphQLObjectType } = require("graphql");
 const adminMutations = require("./adminMutations");
 const serviceMutations = require("./serviceMutations");
 const jobMutations = require("./jobMutations");
+const reviewMutations = require("./reviewMutations");
+const employeeMutations = require("./employeeMutations");
 
 const Mutation = new GraphQLObjectType({
     name: "Mutation",
@@ -10,6 +12,8 @@ const Mutation = new GraphQLObjectType({
         ...adminMutations,
         ...serviceMutations,
         ...jobMutations,
+        ...reviewMutations,
+        ...employeeMutations,
     },
 });
 
