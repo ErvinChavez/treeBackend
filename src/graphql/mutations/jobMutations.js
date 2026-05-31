@@ -8,6 +8,7 @@ const {
 //DB models
 const Client = require("../../models/Client");
 const Job = require("../../models/Job");
+const Service = require("../../models/Service");
 
 //shared services
 const { sendQuoteNotification } = require("../../utils/email");
@@ -85,7 +86,7 @@ const jobMutations = {
         },
     },
 
-    updateJobStauts: {
+    updateJobStatus: {
         type: JobType,
         args: {
             jobId: { type: new GraphQLNonNull(GraphQLInt) },

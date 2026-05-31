@@ -6,7 +6,7 @@ const JobPhoto = require('../models/JobPhoto');
 const Job = require('../models/Job');
 
 //reusable Supabase connection
-const supabase = require("../supabase");
+const supabase = require("../config/supabase");
 
 /**
  * Uploads and processes job photos
