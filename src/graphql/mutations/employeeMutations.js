@@ -2,6 +2,7 @@ const {
     GraphQLNonNull,
     GraphQLString,
     GraphQLList,
+    GraphQLInt,
 } = require("graphql");
 
 //DB Models
