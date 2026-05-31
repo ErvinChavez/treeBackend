@@ -21,7 +21,7 @@ const jobMutations = {
         type: JobType,
         args: {
             clientName: { type : new GraphQLNonNull(GraphQLString) },
-            clientEmail: { type: new GrpahQLNonNull(GraphQLString) },
+            clientEmail: { type: new GraphQLNonNull(GraphQLString) },
             clientPhone: { type: new GraphQLNonNull(GraphQLString) },
             street: { type: new GraphQLNonNull(GraphQLString) },
             city: { type: new GraphQLNonNull(GraphQLString) },

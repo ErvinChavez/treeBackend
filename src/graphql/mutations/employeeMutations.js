@@ -16,8 +16,8 @@ const employeeMutations = {
         type: EmployeeType,
         args: {
             name: { type: new GraphQLNonNull(GraphQLString) },
-            email: { type: new GraphQLString },
-            phone: { type: new GraphQLString },
+            email: { type: GraphQLString },
+            phone: { type: GraphQLString },
         },
         resolve(parent, args, context) {
             if (!context.admin) throw new Error("Unauthorized");
