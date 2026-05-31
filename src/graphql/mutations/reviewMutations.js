@@ -145,5 +145,4 @@ const reviewMutations = {
         
     }
 };
-
-exports.reviewMutations = reviewMutations;
+module.exports = reviewMutations;
