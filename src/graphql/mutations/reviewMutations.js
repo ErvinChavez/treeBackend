@@ -16,7 +16,7 @@ const FeedbackType = require("../types/FeedbackType");
 const reviewMutations = {
     sendReviewRequest: {
         type: GraphQLBoolean,
-        arg: {
+        args: {
             jobId: { type: new GraphQLNonNull(GraphQLInt) },
         },
         async resolve(parent, args, context) {
