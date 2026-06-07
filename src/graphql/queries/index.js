@@ -17,3 +17,5 @@ const RootQuery = new GraphQLObjectType({
     ...serviceQueries,
   }),
 });
+
+module.exports = RootQuery;

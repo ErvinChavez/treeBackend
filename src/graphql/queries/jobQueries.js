@@ -2,7 +2,7 @@ const {
   GraphQLList,
   GraphQLInt,
   GraphQLString,
-  GraphQLInputObjectType,
+  GraphQLObjectType,
 } = require("graphql");
 
 const Job = require("../../models/Job");
@@ -29,7 +29,7 @@ const jobQueries = {
     type: new GraphQLList(
       new GraphQLObjectType({
         name: "JobsByStatus",
-        field: {
+        fields: {
           status: { type: GraphQLString },
           count: { type: GraphQLInt },
         },
