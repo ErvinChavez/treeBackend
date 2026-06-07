@@ -2,9 +2,11 @@ const { GraphQLList, GraphQLInt } = require("graphql");
 
 const Client = require("../../models/Client");
 
+const ClientType = require("../types/ClientType");
+
 const clientQueries = {
   clients: {
-    type: new GraphQLList(Client),
+    type: new GraphQLList(ClientType),
     resolve() {
       return Client.findAll({ include: Job });
     },
