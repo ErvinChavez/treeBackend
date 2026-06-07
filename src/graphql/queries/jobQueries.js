@@ -1,5 +1,3 @@
-//jos, totalJobs, jobsbystatus
-
 const {
   GraphQLList,
   GraphQLInt,
