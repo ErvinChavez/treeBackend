@@ -10,6 +10,7 @@ const crypto = require("crypto");
 
 //DB Models
 const Job = require("../../models/Job");
+const Feedback = require("../../models/Feedback");
 const Client = require("../../models/Client");
 
 //shared services
