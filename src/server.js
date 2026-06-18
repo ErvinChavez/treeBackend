@@ -73,14 +73,23 @@ app.use(
 //restricts frontend access to trusted origins only
 const allowedOrigins = [
   process.env.FRONTEND_URL,
-  "https://ervinchavez.com",
-  "https://www.ervinchavez.com",
-  "http://localhost:3000"
-];
-app.use(cors({
-  origin: allowedOrigins,
-  credentials: true
-}));
+  "https://chaveztree.com",
+  "https://www.chaveztree.com",
+  "http://localhost:3000",
+].filter(Boolean);
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error(`Not allowed by CORS: ${origin}`));
+    },
+    credentials: true,
+  })
+);
 
 //read incoming request data
 app.use(express.urlencoded({ extended: true })); // needed to read POST form data
