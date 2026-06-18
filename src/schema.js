@@ -2,7 +2,7 @@
 const { GraphQLSchema } = require('graphql');
 
 //READ operations, used to fetch data
-const RootQuery = require("./graphql/queries/RootQuery");
+const RootQuery = require("./graphql/queries");
 //WRITE operations, used to change data
 const Mutation = require("./graphql/mutations");
 

@@ -4,6 +4,7 @@ const {
   GraphQLString,
   GraphQLBoolean,
   GraphQLList,
+  GraphQLFloat,
 } = require("graphql");
 
 //graphQl related types
@@ -37,6 +38,8 @@ const JobType = new GraphQLObjectType({
     state: { type: GraphQLString },
     zip: { type: GraphQLString },
 
+    totalAmount: { type: GraphQLFloat },
+
     clientId: { type: GraphQLString },
 
     //track if review email sent
@@ -48,22 +51,22 @@ const JobType = new GraphQLObjectType({
      */
     services: {
       type: new GraphQLList(ServiceType),
-      
+
       resolve(parent) {
         return parent.getServices();
-      }
+      },
     },
-    
+
     /**
      * One-to-one relationship:
      * Job to/from Feedback
      */
     feedback: {
       type: FeedbackType,
-      
+
       resolve(parent) {
         return Feedback.findOne({ where: { jobId: parent.id } });
-      }
+      },
     },
 
     /**
@@ -76,36 +79,36 @@ const JobType = new GraphQLObjectType({
       async resolve(parent) {
         const photos = await JobPhoto.findAll({
           where: { jobId: parent.id },
-          order: [['createdAt', 'ASC']]
+          order: [["createdAt", "ASC"]],
         });
-        
-        return photos.map(p => p.url);
-      }
+
+        return photos.map((p) => p.url);
+      },
     },
 
-     /**
+    /**
      * Many-to-many relationship:
      * Job to/from Employees
      */
     employees: {
       type: new GraphQLList(EmployeeType),
-      
+
       resolve(parent) {
         return parent.getEmployees();
-      }
+      },
     },
 
-     /**
+    /**
      * Many-to-one relationship:
      * Job to/from Client
      */
     client: {
       type: require("./ClientType"),
-      
+
       resolve(parent) {
         return Client.findByPk(parent.clientId);
-      }
-    }
+      },
+    },
   }),
 });
 

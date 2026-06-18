@@ -12,7 +12,7 @@ async function sendEmail(to, subject, html) {
     });
 
     const data = await resend.emails.send({
-      from: "Chavez Tree Service <noreply@ervinchavez.com>",
+      from: process.env.FROM_EMAIL,
       to,
       subject,
       html,
