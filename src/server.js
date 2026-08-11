@@ -2,8 +2,8 @@
 const express = require('express');
 //handle file paths
 const path = require('path');
-//GraphQL endpoint handler
-const { graphqlHTTP } = require('express-graphql');
+//GraphQL endpoint handler (spec-compliant, actively maintained replacement for express-graphql)
+const { createHandler } = require('graphql-http/lib/use/express');
 //allow frontend to connect
 const cors = require('cors');
 //sercurity layer
@@ -73,14 +73,23 @@ app.use(
 //restricts frontend access to trusted origins only
 const allowedOrigins = [
   process.env.FRONTEND_URL,
-  "https://ervinchavez.com",
-  "https://www.ervinchavez.com",
-  "http://localhost:3000"
-];
-app.use(cors({
-  origin: allowedOrigins,
-  credentials: true
-}));
+  "https://chaveztree.com",
+  "https://www.chaveztree.com",
+  "http://localhost:3000",
+].filter(Boolean);
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error(`Not allowed by CORS: ${origin}`));
+    },
+    credentials: true,
+  })
+);
 
 //read incoming request data
 app.use(express.urlencoded({ extended: true })); // needed to read POST form data
@@ -114,29 +123,43 @@ app.get('/', (req, res) => {
 });
 
 //graphQL endpoint(put everything together)
-app.use(
+//NOTE: app.all (not app.use) — the GraphQL over HTTP spec that graphql-http follows
+//requires handling both GET and POST requests on this route.
+app.all(
   '/graphql',
-  graphqlHTTP(async (req) => {
-    let admin = null;
-    
-    const authHeader = req.headers.authorization;
-    
-    if (authHeader) {
-      const token = authHeader.split(' ')[1];
+  createHandler({
+    schema,
+    context: async (req) => {
+      let admin = null;
 
-      try {
-        admin = await getAdminFromToken(token);
-      } catch (err) {
-        admin = null;
+      //req.raw is the underlying Express request (graphql-http wraps it)
+      const authHeader = req.raw.headers.authorization;
+
+      if (authHeader) {
+        const token = authHeader.split(' ')[1];
+
+        try {
+          admin = await getAdminFromToken(token);
+        } catch (err) {
+          admin = null;
+        }
       }
-    }
-    return {
-      schema,
-      context: { admin }, 
-      graphiql: process.env.NODE_ENV !== 'production',
-    };
+
+      return { admin };
+    },
   })
 );
+
+//Dev-only GraphQL IDE (express-graphql used to bundle this via graphiql:true;
+//graphql-http is spec-only and intentionally ships no UI, so we mount Ruru ourselves)
+if (process.env.NODE_ENV !== 'production') {
+  const { ruruHTML } = require('ruru/server');
+
+  app.get('/graphiql', (req, res) => {
+    res.type('html');
+    res.end(ruruHTML({ endpoint: '/graphql' }));
+  });
+}
 
 // Global error handler (keep it for unexpected errors)
 app.use((err, req, res, next) => {
