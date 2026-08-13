@@ -70,12 +70,36 @@ app.use(
   })
 );
 
+//Dev-only GraphQL IDE (express-graphql used to bundle this via graphiql:true;
+//graphql-http is spec-only and intentionally ships no UI, so we mount Ruru ourselves).
+//Ruru's assets are served from our own /ruru-static route (not unpkg.com) so the
+//Helmet CSP above doesn't need any external script-src exceptions.
+//NOTE: mounted BEFORE the cors() middleware below on purpose — this is local dev
+//tooling only, never called cross-origin from a real browser tab, and ES module
+//<script>/<link modulepreload> requests send an Origin header even for same-origin
+//requests, which the strict API CORS whitelist would otherwise reject with a 500.
+if (process.env.NODE_ENV !== 'production') {
+  const { ruruHTML } = require('ruru/server');
+
+  app.use('/ruru-static', express.static(path.join(__dirname, '../node_modules/ruru/static')));
+
+  app.get('/graphiql', (req, res) => {
+    res.type('html');
+    res.end(ruruHTML({ endpoint: '/graphql', staticPath: '/ruru-static/' }));
+  });
+}
+
 //restricts frontend access to trusted origins only
 const allowedOrigins = [
   process.env.FRONTEND_URL,
   "https://chaveztree.com",
   "https://www.chaveztree.com",
   "http://localhost:3000",
+  //dev-only: lets the GraphiQL IDE (served from this same backend, see /graphiql
+  //above) query /graphql without tripping CORS — it's a same-origin request in
+  //spirit, but browsers still attach an Origin header on fetch() calls. Never
+  //added in production, where the whitelist stays exactly as strict as before.
+  process.env.NODE_ENV !== 'production' ? `http://localhost:${process.env.PORT || 5000}` : null,
 ].filter(Boolean);
 
 app.use(
@@ -149,17 +173,6 @@ app.all(
     },
   })
 );
-
-//Dev-only GraphQL IDE (express-graphql used to bundle this via graphiql:true;
-//graphql-http is spec-only and intentionally ships no UI, so we mount Ruru ourselves)
-if (process.env.NODE_ENV !== 'production') {
-  const { ruruHTML } = require('ruru/server');
-
-  app.get('/graphiql', (req, res) => {
-    res.type('html');
-    res.end(ruruHTML({ endpoint: '/graphql' }));
-  });
-}
 
 // Global error handler (keep it for unexpected errors)
 app.use((err, req, res, next) => {
