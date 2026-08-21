@@ -71,17 +71,26 @@ const jobMutations = {
       }
 
       //send notification email to admin
-      await sendQuoteNotification({
-        clientName: args.clientName,
-        clientEmail: args.clientEmail,
-        clientPhone: args.clientPhone,
-        street: args.street,
-        city: args.city,
-        state: args.state,
-        zip: args.zip,
-        jobId: job.id,
-        services: services.map((s) => s.name),
-      });
+      try {
+        await sendQuoteNotification({
+          clientName: args.clientName,
+          clientEmail: args.clientEmail,
+          clientPhone: args.clientPhone,
+          street: args.street,
+          city: args.city,
+          state: args.state,
+          zip: args.zip,
+          jobId: job.id,
+          services: services.map((s) => s.name),
+        });
+      } catch (err) {
+        //loud, unmistakable log so this shows up immediately in Render's logs
+        console.error(
+          `🚨 QUOTE NOTIFICATION EMAIL FAILED for job #${job.id} (client: ${args.clientEmail}). ` +
+          `The quote request itself was saved successfully. Check Resend/email config. Error:`,
+          err
+        );
+      }
 
       return job;
     },
