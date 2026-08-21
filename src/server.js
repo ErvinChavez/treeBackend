@@ -2,8 +2,8 @@
 const express = require('express');
 //handle file paths
 const path = require('path');
-//GraphQL endpoint handler
-const { graphqlHTTP } = require('express-graphql');
+//GraphQL endpoint handler (spec-compliant, actively maintained replacement for express-graphql)
+const { createHandler } = require('graphql-http/lib/use/express');
 //allow frontend to connect
 const cors = require('cors');
 //sercurity layer
@@ -70,12 +70,39 @@ app.use(
   })
 );
 
+//Dev-only GraphQL IDE (express-graphql used to bundle this via graphiql:true;
+//graphql-http is spec-only and intentionally ships no UI, so we mount Ruru ourselves).
+//Ruru's assets are served from our own /ruru-static route (not unpkg.com) so the
+//Helmet CSP above doesn't need any external script-src exceptions.
+//NOTE: mounted BEFORE the cors() middleware below on purpose — this is local dev
+//tooling only, never called cross-origin from a real browser tab, and ES module
+//<script>/<link modulepreload> requests send an Origin header even for same-origin
+//requests, which the strict API CORS whitelist would otherwise reject with a 500.
+if (process.env.NODE_ENV !== 'production') {
+  const { ruruHTML } = require('ruru/server');
+
+  app.use('/ruru-static', express.static(path.join(__dirname, '../node_modules/ruru/static')));
+
+  app.get('/graphiql', (req, res) => {
+    res.type('html');
+    res.end(ruruHTML({ endpoint: '/graphql', staticPath: '/ruru-static/' }));
+  });
+}
+
 //restricts frontend access to trusted origins only
 const allowedOrigins = [
   process.env.FRONTEND_URL,
   "https://chaveztree.com",
   "https://www.chaveztree.com",
   "http://localhost:3000",
+<<<<<<< HEAD
+=======
+  //dev-only: lets the GraphiQL IDE (served from this same backend, see /graphiql
+  //above) query /graphql without tripping CORS — it's a same-origin request in
+  //spirit, but browsers still attach an Origin header on fetch() calls. Never
+  //added in production, where the whitelist stays exactly as strict as before.
+  process.env.NODE_ENV !== 'production' ? `http://localhost:${process.env.PORT || 5000}` : null,
+>>>>>>> backend-cleanup
 ].filter(Boolean);
 
 app.use(
@@ -123,27 +150,30 @@ app.get('/', (req, res) => {
 });
 
 //graphQL endpoint(put everything together)
-app.use(
+//NOTE: app.all (not app.use) — the GraphQL over HTTP spec that graphql-http follows
+//requires handling both GET and POST requests on this route.
+app.all(
   '/graphql',
-  graphqlHTTP(async (req) => {
-    let admin = null;
-    
-    const authHeader = req.headers.authorization;
-    
-    if (authHeader) {
-      const token = authHeader.split(' ')[1];
+  createHandler({
+    schema,
+    context: async (req) => {
+      let admin = null;
 
-      try {
-        admin = await getAdminFromToken(token);
-      } catch (err) {
-        admin = null;
+      //req.raw is the underlying Express request (graphql-http wraps it)
+      const authHeader = req.raw.headers.authorization;
+
+      if (authHeader) {
+        const token = authHeader.split(' ')[1];
+
+        try {
+          admin = await getAdminFromToken(token);
+        } catch (err) {
+          admin = null;
+        }
       }
-    }
-    return {
-      schema,
-      context: { admin }, 
-      graphiql: process.env.NODE_ENV !== 'production',
-    };
+
+      return { admin };
+    },
   })
 );
 

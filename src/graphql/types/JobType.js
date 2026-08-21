@@ -33,12 +33,27 @@ const JobType = new GraphQLObjectType({
     scheduledDate: { type: GraphQLString },
 
     //job location details
-    street: { type: GraphQLString },
-    city: { type: GraphQLString },
-    state: { type: GraphQLString },
-    zip: { type: GraphQLString },
+    street: {
+      type: GraphQLString,
+      resolve: (parent, args, context) => (context.admin ? parent.street : null),
+    },
+    city: {
+      type: GraphQLString,
+      resolve: (parent, args, context) => (context.admin ? parent.city : null),
+    },
+    state: {
+      type: GraphQLString,
+      resolve: (parent, args, context) => (context.admin ? parent.state : null),
+    },
+    zip: {
+      type: GraphQLString,
+      resolve: (parent, args, context) => (context.admin ? parent.zip : null),
+    },
 
-    totalAmount: { type: GraphQLFloat },
+    totalAmount: {
+      type: GraphQLFloat,
+      resolve: (parent, args, context) => (context.admin ? parent.totalAmount : null),
+    },
 
     clientId: { type: GraphQLString },
 
@@ -105,7 +120,8 @@ const JobType = new GraphQLObjectType({
     client: {
       type: require("./ClientType"),
 
-      resolve(parent) {
+      resolve(parent, args, context) {
+        if (!context.admin) return null;
         return Client.findByPk(parent.clientId);
       },
     },

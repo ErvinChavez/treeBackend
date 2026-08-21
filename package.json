@@ -26,19 +26,22 @@
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
     "express-async-handler": "^1.2.0",
-    "express-graphql": "^0.12.0",
-    "express-rate-limit": "^8.3.1",
-    "graphql": "^15.10.1",
-    "graphql-http": "^1.22.4",
-    "helmet": "^8.1.0",
+    "express-rate-limit": "^8.6.2",
+    "graphql": "^17.0.2",
+    "graphql-http": "^1.23.0",
+    "helmet": "^8.3.0",
     "jsonwebtoken": "^9.0.3",
     "multer": "^2.1.1",
     "pg": "^8.20.0",
     "resend": "^6.12.3",
     "sequelize": "^6.37.8",
-    "sharp": "^0.34.5"
+    "sharp": "^0.35.3"
   },
   "devDependencies": {
-    "nodemon": "^3.1.14"
+    "nodemon": "^3.1.14",
+    "ruru": "^2.0.1"
+  },
+  "overrides": {
+    "uuid": "^11.1.1"
   }
 }

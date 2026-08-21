@@ -1,3 +1,16 @@
 node_modules/
 .env
+.env*.local
 uploads/
+
+# Logs
+npm-debug.log*
+*.log
+
+# Local editor folders
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
