@@ -95,14 +95,7 @@ const allowedOrigins = [
   "https://chaveztree.com",
   "https://www.chaveztree.com",
   "http://localhost:3000",
-<<<<<<< HEAD
-=======
-  //dev-only: lets the GraphiQL IDE (served from this same backend, see /graphiql
-  //above) query /graphql without tripping CORS — it's a same-origin request in
-  //spirit, but browsers still attach an Origin header on fetch() calls. Never
-  //added in production, where the whitelist stays exactly as strict as before.
   process.env.NODE_ENV !== 'production' ? `http://localhost:${process.env.PORT || 5000}` : null,
->>>>>>> backend-cleanup
 ].filter(Boolean);
 
 app.use(
