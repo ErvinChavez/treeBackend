@@ -7,6 +7,7 @@ const {
 
 //DB Models
 const Employee = require("../../models/Employee");
+const Job = require("../../models/Job");
 
 //graphql types
 const EmployeeType = require("../types/EmployeeType");
@@ -61,6 +62,12 @@ const employeeMutations = {
             const employee = await Employee.findByPk(args.id);
             if (!employee) throw new Error("Employee not found");
 
+            //Employees with job history (including one-off subs/day-laborers)
+            //are archived, not hard-deleted — the join table has no cascade
+            //rule, and more importantly, hard-deleting would erase the record
+            //of who actually worked past jobs. Archiving just pulls them off
+            //the active roster used for assigning NEW work; nothing about
+            //historical jobs changes.
             const assignedJobs = await employee.getJobs();
             if (assignedJobs.length > 0) {
                 employee.active = false;
@@ -68,6 +75,8 @@ const employeeMutations = {
                 return `${employee.name} archived (still linked to ${assignedJobs.length} past job(s)). Removed from active team, job history preserved.`;
             }
 
+            //no job history at all — safe to fully remove, e.g. an employee
+            //added by mistake and never actually assigned to anything
             await employee.destroy();
             return "Employee deleted successfully";
         },
@@ -90,7 +99,7 @@ const employeeMutations = {
         },
     },
 
-    assignEmployeeToJob: {
+    assignEmployeesToJob: {
         type: JobType,
         args: {
             jobId: { type: new GraphQLNonNull(GraphQLInt) },
