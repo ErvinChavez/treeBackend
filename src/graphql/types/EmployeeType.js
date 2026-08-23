@@ -1,7 +1,8 @@
 //GraphQL core types
 const {
     GraphQLObjectType,
-    GraphQLString
+    GraphQLString,
+    GraphQLBoolean
 } = require("graphql");
 
 /**
@@ -17,6 +18,7 @@ const EmployeeType = new GraphQLObjectType({
         name: { type: GraphQLString },
         email: { type: GraphQLString},
         phone: { type: GraphQLString},
+        active: { type: GraphQLBoolean },
     }),
 });
 

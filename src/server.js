@@ -70,14 +70,7 @@ app.use(
   })
 );
 
-//Dev-only GraphQL IDE (express-graphql used to bundle this via graphiql:true;
-//graphql-http is spec-only and intentionally ships no UI, so we mount Ruru ourselves).
-//Ruru's assets are served from our own /ruru-static route (not unpkg.com) so the
-//Helmet CSP above doesn't need any external script-src exceptions.
-//NOTE: mounted BEFORE the cors() middleware below on purpose — this is local dev
-//tooling only, never called cross-origin from a real browser tab, and ES module
-//<script>/<link modulepreload> requests send an Origin header even for same-origin
-//requests, which the strict API CORS whitelist would otherwise reject with a 500.
+
 if (process.env.NODE_ENV !== 'production') {
   const { ruruHTML } = require('ruru/server');
 
@@ -112,8 +105,8 @@ app.use(
 );
 
 //read incoming request data
-app.use(express.urlencoded({ extended: true })); // needed to read POST form data
-app.use(express.json({ limit: '5mb' })); // limit JSON payloads
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '5mb' })); 
 
 //prevent spam/brute-force attacks
 app.use(
@@ -125,7 +118,6 @@ app.use(
   })
 );
 
-//(Supabase Storage for deployment)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads'),{
   setHeaders: (res, path, stat) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -133,18 +125,13 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads'),{
   }
   }));
 
-//REST endpoints
 app.use('/api/upload', uploadRoutes);
 
 
-// Test route (health check)
 app.get('/', (req, res) => {
   res.send('Chavez Tree Service backend is running!');
 });
 
-//graphQL endpoint(put everything together)
-//NOTE: app.all (not app.use) — the GraphQL over HTTP spec that graphql-http follows
-//requires handling both GET and POST requests on this route.
 app.all(
   '/graphql',
   createHandler({
@@ -152,7 +139,6 @@ app.all(
     context: async (req) => {
       let admin = null;
 
-      //req.raw is the underlying Express request (graphql-http wraps it)
       const authHeader = req.raw.headers.authorization;
 
       if (authHeader) {
@@ -170,19 +156,13 @@ app.all(
   })
 );
 
-// Global error handler (keep it for unexpected errors)
+// Global error handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
 
   res.status(500).json({ message: 'Internal Server Error' });
 });
 
-/**
- * Server bootstrap
- * - DB connection
- * - model sync
- * - API startup
- */
 const PORT = process.env.PORT || 5000;
 
 sequelize
