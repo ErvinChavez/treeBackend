@@ -183,7 +183,7 @@ sequelize
   .authenticate()
   .then(() => {
     console.log('PostgreSQL connected successfully!');
-    return sequelize.sync({alter: true}); //dev only: { alter: true }
+    return sequelize.sync(); //dev only: { alter: true }
   })
   .then(() => {
     console.log('All models synced to DB');
