@@ -10,6 +10,7 @@ const Job = require('./Job');
 const JobPhoto = sequelize.define('JobPhoto', {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     url: { type: DataTypes.STRING, allowNull: false },
+    featured: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
 }, { timestamps: true });
 
 module.exports = JobPhoto;
