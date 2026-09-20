@@ -11,21 +11,17 @@ const {
 const ServiceType = require("./ServiceType");
 const FeedbackType = require("./FeedbackType");
 const EmployeeType = require("./EmployeeType");
+const JobPhotoType = require("./JobPhotoType");
 
 //DB models
 const Client = require("../../models/Client");
 const Feedback = require("../../models/Feedback");
 const JobPhoto = require("../../models/JobPhoto");
 
-/**
- * Job GraphQL type
- * Represents the core business workflow entity
- * Includes relationships to services, employees, feedback, and media
- */
+/* Job GraphQL type */
 const JobType = new GraphQLObjectType({
   name: "Job",
 
-  //wrapped in a function to avoid circular dependency issues
   fields: () => ({
     id: { type: GraphQLString },
     status: { type: GraphQLString },
@@ -57,13 +53,8 @@ const JobType = new GraphQLObjectType({
 
     clientId: { type: GraphQLString },
 
-    //track if review email sent
     reviewRequested: { type: GraphQLBoolean },
 
-    /**
-     * Many-to-many relationship:
-     * Job to/from Services
-     */
     services: {
       type: new GraphQLList(ServiceType),
 
@@ -72,10 +63,6 @@ const JobType = new GraphQLObjectType({
       },
     },
 
-    /**
-     * One-to-one relationship:
-     * Job to/from Feedback
-     */
     feedback: {
       type: FeedbackType,
 
@@ -84,27 +71,17 @@ const JobType = new GraphQLObjectType({
       },
     },
 
-    /**
-     * Job photo gallery
-     * Returns only image URLs for frontend rendering
-     */
     photos: {
-      type: new GraphQLList(GraphQLString),
+      type: new GraphQLList(JobPhotoType),
 
       async resolve(parent) {
-        const photos = await JobPhoto.findAll({
+        return JobPhoto.findAll({
           where: { jobId: parent.id },
           order: [["createdAt", "ASC"]],
         });
-
-        return photos.map((p) => p.url);
       },
     },
 
-    /**
-     * Many-to-many relationship:
-     * Job to/from Employees
-     */
     employees: {
       type: new GraphQLList(EmployeeType),
 
@@ -113,10 +90,6 @@ const JobType = new GraphQLObjectType({
       },
     },
 
-    /**
-     * Many-to-one relationship:
-     * Job to/from Client
-     */
     client: {
       type: require("./ClientType"),
 

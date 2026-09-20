@@ -5,6 +5,7 @@ const clientQueries = require("./clientQueries");
 const employeeQueries = require("./employeeQueries");
 const jobQueries = require("./jobQueries");
 const serviceQueries = require("./serviceQueries");
+const photoQueries = require("./photoQueries");
 
 const RootQuery = new GraphQLObjectType({
   name: "RootQueryType",
@@ -15,6 +16,7 @@ const RootQuery = new GraphQLObjectType({
     ...employeeQueries,
     ...jobQueries,
     ...serviceQueries,
+    ...photoQueries,
   }),
 });
 
