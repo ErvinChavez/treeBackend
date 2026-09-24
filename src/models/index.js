@@ -10,6 +10,7 @@ require('./Feedback');
 require('./JobPhoto');
 require('./JobService');
 require('./JobEmployee');
+require('./Payment');
 
 // Load associations 
 const applyAssociations = require('./Associations');

@@ -2,11 +2,6 @@ const { DataTypes } = require("sequelize");
 const sequelize = require("../config/db");
 const Client = require("./Client");
 
-/**
- * Job model
- * Core business entity representing a customer service request/work order
- * Includes workflow state, scheduling, location, and review tracking
- */
 const Job = sequelize.define(
   "Job",
   {
@@ -32,6 +27,14 @@ const Job = sequelize.define(
     totalAmount: { type: DataTypes.DECIMAL(10, 2), allowNull: true },
     reviewRequested: { type: DataTypes.BOOLEAN, defaultValue: false },
     reviewToken: { type: DataTypes.STRING, allowNull: true },
+
+    quoteSent: { type: DataTypes.BOOLEAN, defaultValue: false },
+    quoteSentAt: { type: DataTypes.DATE, allowNull: true },
+
+    paymentRequested: { type: DataTypes.BOOLEAN, defaultValue: false },
+   
+    payToken: { type: DataTypes.STRING, allowNull: true },
+    paidAt: { type: DataTypes.DATE, allowNull: true },
   },
   { timestamps: true },
 );

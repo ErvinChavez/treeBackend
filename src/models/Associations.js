@@ -6,6 +6,7 @@ const Feedback = require('./Feedback');
 const JobPhoto = require('./JobPhoto');
 const JobService = require('./JobService');
 const JobEmployee = require('./JobEmployee');
+const Payment = require('./Payment');
 
 function applyAssociations() {
     //Relation: Job belongs to a single Client (many-to-one)
@@ -27,6 +28,10 @@ function applyAssociations() {
     //Relation: JobPhoto belongs to one Job
     Job.hasMany(JobPhoto, { foreignKey: 'jobId' });
     JobPhoto.belongsTo(Job, { foreignKey: 'jobId' });
+
+    //Relation: Payment belongs to one Job (a job can have many payments)
+    Job.hasMany(Payment, { foreignKey: 'jobId' });
+    Payment.belongsTo(Job, { foreignKey: 'jobId' });
 
 }
 module.exports = applyAssociations;

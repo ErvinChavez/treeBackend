@@ -29,6 +29,7 @@ require('./models');
 const schema = require('./schema');
 // REST endpoints(for uploads and reviews)
 const uploadRoutes = require('./routes/uploadRoutes');
+const paymentRoutes = require('./routes/paymentRoutes');
 
 const app = express();
 
@@ -88,7 +89,6 @@ const allowedOrigins = [
   "https://chaveztree.com",
   "https://www.chaveztree.com",
   "http://localhost:3000",
-  
   process.env.NODE_ENV !== 'production' ? `http://localhost:${process.env.PORT || 5000}` : null,
 ].filter(Boolean);
 
@@ -104,10 +104,11 @@ app.use(
     credentials: true,
   })
 );
+app.use('/api/payments', paymentRoutes);
 
 //read incoming request data
-app.use(express.urlencoded({ extended: true })); // needed to read POST form data
-app.use(express.json({ limit: '5mb' })); // limit JSON payloads
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '5mb' }));
 
 //prevent spam/brute-force attacks
 app.use(
@@ -119,7 +120,6 @@ app.use(
   })
 );
 
-//(Supabase Storage for deployment)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads'),{
   setHeaders: (res, path, stat) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -127,18 +127,13 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads'),{
   }
   }));
 
-//REST endpoints
 app.use('/api/upload', uploadRoutes);
 
 
-// Test route (health check)
 app.get('/', (req, res) => {
   res.send('Chavez Tree Service backend is running!');
 });
 
-//graphQL endpoint(put everything together)
-//NOTE: app.all (not app.use) — the GraphQL over HTTP spec that graphql-http follows
-//requires handling both GET and POST requests on this route.
 app.all(
   '/graphql',
   createHandler({
@@ -146,7 +141,6 @@ app.all(
     context: async (req) => {
       let admin = null;
 
-      //req.raw is the underlying Express request (graphql-http wraps it)
       const authHeader = req.raw.headers.authorization;
 
       if (authHeader) {
@@ -164,19 +158,13 @@ app.all(
   })
 );
 
-// Global error handler (keep it for unexpected errors)
+// Global error handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
 
   res.status(500).json({ message: 'Internal Server Error' });
 });
 
-/**
- * Server bootstrap
- * - DB connection
- * - model sync
- * - API startup
- */
 const PORT = process.env.PORT || 5000;
 
 sequelize
